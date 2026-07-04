@@ -338,13 +338,127 @@
     100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
   }
 
-  /* 响应式 */
+  /* === 扫雷 === */
+  .minesweeper-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ms-header {
+    display: flex; justify-content: space-between; align-items: center;
+    width: 100%; max-width: 360px; padding: 10px 16px;
+    background: var(--surface2); border-radius: var(--radius-sm);
+  }
+  .ms-counter {
+    font-size: 20px; font-weight: 700; color: var(--danger);
+    font-variant-numeric: tabular-nums; min-width: 40px; text-align: center;
+  }
+  .ms-face {
+    font-size: 28px; cursor: pointer; width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: var(--surface);
+    border: 2px solid rgba(255,255,255,0.1); transition: 0.15s;
+  }
+  .ms-face:hover { background: var(--surface2); }
+  .ms-grid {
+    display: grid; gap: 2px;
+    background: rgba(255,255,255,0.03); padding: 4px;
+    border-radius: var(--radius-sm);
+  }
+  .ms-cell {
+    width: 36px; height: 36px; border-radius: 4px;
+    cursor: pointer; font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface2); border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.1s; color: #ccc;
+  }
+  .ms-cell:hover { background: rgba(255,255,255,0.06); }
+  .ms-cell.revealed {
+    background: rgba(255,255,255,0.03); border-color: transparent;
+    cursor: default;
+  }
+  .ms-cell.flagged { color: var(--danger); }
+  .ms-cell.mine-exploded { background: var(--danger) !important; }
+  .ms-cell .c1 { color: #4ecca3; }
+  .ms-cell .c2 { color: #3498db; }
+  .ms-cell .c3 { color: #ff6b6b; }
+  .ms-cell .c4 { color: #9b59b6; }
+  .ms-cell .c5 { color: #e67e22; }
+  .ms-cell .c6 { color: #00bcd4; }
+  .ms-cell .c7 { color: #f1c40f; }
+  .ms-cell .c8 { color: #e91e63; }
+  .ms-difficulty { display: flex; gap: 8px; }
+  .ms-diff-btn {
+    padding: 5px 14px; border-radius: 14px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.12);
+    background: transparent; color: var(--text-dim); font-family: inherit;
+    transition: 0.2s;
+  }
+  .ms-diff-btn:hover { color: #fff; }
+  .ms-diff-btn.active { background: rgba(108,99,255,0.2); color: var(--primary-glow); border-color: var(--primary); }
+
+  /* === 蜘蛛纸牌 === */
+  .spider-table {
+    display: flex; flex-direction: column; gap: 8px;
+    width: 100%; max-width: 680px;
+  }
+  .spider-row {
+    display: flex; gap: 4px; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .spider-col {
+    position: relative; width: 62px; min-height: 80px;
+  }
+  .spider-card {
+    width: 60px; height: 80px; border-radius: 6px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.1s; position: absolute;
+    background: #fff; color: #222;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    left: 0; user-select: none;
+  }
+  .spider-card.red { color: #c0392b; }
+  .spider-card.selected {
+    box-shadow: 0 0 0 3px var(--primary-glow), 0 4px 12px rgba(108,99,255,0.4);
+    transform: translateY(-4px);
+  }
+  .spider-card.face-down {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: transparent; cursor: default;
+    border-color: rgba(255,255,255,0.05);
+  }
+  .spider-card.face-down::after {
+    content: '🕷';
+    color: rgba(255,255,255,0.1); font-size: 20px;
+  }
+  .spider-complete {
+    font-size: 32px; padding: 8px 12px;
+    background: var(--surface2); border-radius: 8px;
+    animation: popIn 0.4s ease;
+  }
+  .spider-stock {
+    display: flex; gap: 6px; justify-content: center; margin-top: 8px;
+  }
+  .spider-stock-pile {
+    width: 50px; height: 70px; border-radius: 6px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    cursor: pointer; border: 2px dashed rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: rgba(255,255,255,0.3); transition: 0.2s;
+  }
+  .spider-stock-pile:hover { border-color: rgba(255,255,255,0.3); }
+  .spider-stock-pile.empty { opacity: 0.2; cursor: default; }
+  .spider-hint { font-size: 12px; color: var(--text-dim); margin-top: 6px; text-align: center; }
+
+  /* 响应式补充 */
   @media (max-width: 480px) {
     .game-grid { grid-template-columns: 1fr; }
     .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
     .memory-card { font-size: 24px; }
     .stroop-word { font-size: 44px; }
     .math-problem { font-size: 32px; }
+    .ms-cell { width: 28px; height: 28px; font-size: 13px; }
+    .spider-col { width: 44px; min-height: 60px; }
+    .spider-card { width: 42px; height: 58px; font-size: 13px; }
+    .spider-stock-pile { width: 38px; height: 54px; }
   }
 </style>
 </head>
@@ -389,6 +503,18 @@
         <div class="g-name">反应点击</div>
         <div class="g-desc">测试你的反应速度</div>
         <div class="g-best" id="bestReaction">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('minesweeper')">
+        <div class="g-icon">💣</div>
+        <div class="g-name">扫雷</div>
+        <div class="g-desc">经典扫雷，避开所有地雷</div>
+        <div class="g-best" id="bestMinesweeper">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('spider')">
+        <div class="g-icon">🕷️</div>
+        <div class="g-name">蜘蛛纸牌</div>
+        <div class="g-desc">K到A顺子消除，清空所有牌</div>
+        <div class="g-best" id="bestSpider">--</div>
       </div>
     </div>
   </div>
@@ -464,6 +590,49 @@
       <div class="react-instruction" id="reactInstruction">看到绿色立即点击！</div>
     </div>
   </div>
+
+  <!-- ========== 扫雷 ========== -->
+  <div class="screen" id="minesweeperScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">💣 扫雷</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="msMines">10</div><div class="hud-label">剩余雷</div></div>
+        <div class="hud-item"><div class="hud-val" id="msTimer">0s</div><div class="hud-label">时间</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="minesweeperArea">
+      <div class="ms-difficulty">
+        <button class="ms-diff-btn active" onclick="setMsDifficulty(9,10)" id="msEasy">😊 初级 9×9</button>
+        <button class="ms-diff-btn" onclick="setMsDifficulty(12,18)" id="msMedium">😐 中级 12×12</button>
+        <button class="ms-diff-btn" onclick="setMsDifficulty(16,40)" id="msHard">😈 高级 16×16</button>
+      </div>
+      <div class="ms-header" style="margin-top:10px;">
+        <div class="ms-counter" id="msMineCount">010</div>
+        <div class="ms-face" id="msFace" onclick="resetMinesweeper()">🙂</div>
+        <div class="ms-counter" id="msTimeDisplay">000</div>
+      </div>
+      <div class="ms-grid" id="msGrid"></div>
+    </div>
+  </div>
+
+  <!-- ========== 蜘蛛纸牌 ========== -->
+  <div class="screen" id="spiderScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">🕷️ 蜘蛛纸牌</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="spiderMoves">0</div><div class="hud-label">步数</div></div>
+        <div class="hud-item"><div class="hud-val" id="spiderCompleted">0/8</div><div class="hud-label">完成</div></div>
+        <div class="hud-item"><div class="hud-val" id="spiderScore">0</div><div class="hud-label">得分</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="spiderArea">
+      <div class="spider-table" id="spiderTable"></div>
+      <div class="spider-stock" id="spiderStock"></div>
+      <div class="spider-hint">💡 点击一张牌选中，再点击目标列放下 | K→A顺子自动消除 | 同花色才能连</div>
+    </div>
+  </div>
 </div>
 
 <!-- 结果弹窗容器 -->
@@ -537,6 +706,8 @@ function updateMenuStats() {
   document.getElementById('bestMath').textContent = formatBest(s.math);
   document.getElementById('bestStroop').textContent = formatBest(s.stroop);
   document.getElementById('bestReaction').textContent = s.reaction ? `${s.reaction}ms` : '--';
+  document.getElementById('bestMinesweeper').textContent = s.minesweeper ? `${s.minesweeper}s` : '--';
+  document.getElementById('bestSpider').textContent = formatBest(s.spider);
 }
 
 // ==================== 结果弹窗 ====================
@@ -636,6 +807,8 @@ function startGame(game) {
   else if (game === 'math') startMath();
   else if (game === 'stroop') startStroop();
   else if (game === 'reaction') startReaction();
+  else if (game === 'minesweeper') startMinesweeper();
+  else if (game === 'spider') startSpider();
 }
 
 function startMemory() {
@@ -1003,7 +1176,494 @@ function endStroop() {
   }, 300);
 }
 
-// ==================== 游戏4：反应点击 ====================
+// ==================== 游戏5：扫雷 ====================
+let msState = null;
+
+function startMinesweeper() {
+  showScreen('minesweeperScreen');
+  msState = { rows: 9, cols: 9, mines: 10, grid: [], revealed: [], flagged: [], gameOver: false, won: false, started: false, timerId: null, timer: 0 };
+  resetMinesweeper();
+}
+
+function setMsDifficulty(rows, mines) {
+  msState.rows = rows; msState.cols = rows; msState.mines = mines;
+  ['msEasy','msMedium','msHard'].forEach(id => document.getElementById(id).classList.remove('active'));
+  const map = {9:'msEasy',12:'msMedium',16:'msHard'};
+  document.getElementById(map[rows]).classList.add('active');
+  resetMinesweeper();
+}
+
+function resetMinesweeper() {
+  const s = msState;
+  s.grid = []; s.revealed = []; s.flagged = []; s.gameOver = false; s.won = false; s.started = false; s.timer = 0;
+  if (s.timerId) clearTimer(s.timerId); s.timerId = null;
+
+  document.getElementById('msFace').textContent = '🙂';
+  document.getElementById('msMineCount').textContent = String(s.mines).padStart(3,'0');
+  document.getElementById('msTimeDisplay').textContent = '000';
+  document.getElementById('msMines').textContent = s.mines;
+
+  const grid = document.getElementById('msGrid');
+  grid.style.gridTemplateColumns = `repeat(${s.cols}, 36px)`;
+  grid.innerHTML = '';
+
+  for (let r = 0; r < s.rows; r++) {
+    s.grid[r] = []; s.revealed[r] = []; s.flagged[r] = [];
+    for (let c = 0; c < s.cols; c++) {
+      s.grid[r][c] = 0;
+      s.revealed[r][c] = false;
+      s.flagged[r][c] = false;
+      const cell = document.createElement('div');
+      cell.className = 'ms-cell';
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.onclick = () => revealMs(r, c);
+      cell.oncontextmenu = (e) => { e.preventDefault(); toggleFlag(r, c); };
+      cell.addEventListener('touchstart', msTouchHandler);
+      grid.appendChild(cell);
+    }
+  }
+}
+
+let msLongPress = null;
+function msTouchHandler(e) {
+  const r = parseInt(this.dataset.r), c = parseInt(this.dataset.c);
+  msLongPress = setTimeout(() => { toggleFlag(r, c); msLongPress = null; }, 400);
+  this.addEventListener('touchend', function handler() {
+    if (msLongPress) { clearTimeout(msLongPress); msLongPress = null; revealMs(r, c); }
+    this.removeEventListener('touchend', handler);
+  }, {once: true});
+  this.addEventListener('touchmove', function handler() {
+    clearTimeout(msLongPress); msLongPress = null;
+    this.removeEventListener('touchend', handler);
+    this.removeEventListener('touchmove', handler);
+  }, {once: true});
+}
+
+function placeMines(sr, sc) {
+  const s = msState;
+  let placed = 0;
+  while (placed < s.mines) {
+    const r = Math.floor(Math.random() * s.rows);
+    const c = Math.floor(Math.random() * s.cols);
+    if (s.grid[r][c] === -1 || (Math.abs(r - sr) <= 1 && Math.abs(c - sc) <= 1)) continue;
+    s.grid[r][c] = -1; placed++;
+    // 更新周围数字
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < s.rows && nc >= 0 && nc < s.cols && s.grid[nr][nc] !== -1) {
+          s.grid[nr][nc]++;
+        }
+      }
+    }
+  }
+}
+
+function revealMs(r, c) {
+  const s = msState;
+  if (s.gameOver || s.revealed[r][c] || s.flagged[r][c]) return;
+
+  if (!s.started) {
+    s.started = true;
+    placeMines(r, c);
+    s.timerId = addInterval(() => {
+      s.timer++;
+      document.getElementById('msTimeDisplay').textContent = String(Math.min(s.timer,999)).padStart(3,'0');
+    }, 1000);
+  }
+
+  if (s.grid[r][c] === -1) {
+    // BOOM
+    s.gameOver = true;
+    if (s.timerId) clearTimer(s.timerId);
+    document.getElementById('msFace').textContent = '😵';
+    const cell = document.querySelector(`.ms-cell[data-r="${r}"][data-c="${c}"]`);
+    cell.classList.add('mine-exploded'); cell.textContent = '💣';
+    // 显示所有雷
+    for (let rr = 0; rr < s.rows; rr++) {
+      for (let cc = 0; cc < s.cols; cc++) {
+        if (s.grid[rr][cc] === -1 && !(rr === r && cc === c)) {
+          const mc = document.querySelector(`.ms-cell[data-r="${rr}"][data-c="${cc}"]`);
+          mc.textContent = '💣'; mc.style.opacity = '0.6';
+        }
+      }
+    }
+    sfxWrong();
+    addTimer(() => {
+      showResult('💣', '踩到雷了！', '💥',
+        `用时 ${s.timer} 秒`, false, resetMinesweeper, goMenu);
+    }, 600);
+    return;
+  }
+
+  // BFS reveal
+  const queue = [[r, c]];
+  while (queue.length) {
+    const [cr, cc] = queue.shift();
+    if (s.revealed[cr][cc] || s.flagged[cr][cc]) continue;
+    s.revealed[cr][cc] = true;
+    const cell = document.querySelector(`.ms-cell[data-r="${cr}"][data-c="${cc}"]`);
+    cell.classList.add('revealed');
+    const val = s.grid[cr][cc];
+    if (val > 0) {
+      cell.innerHTML = `<span class="c${val}">${val}</span>`;
+    }
+    if (val === 0) {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          const nr = cr + dr, nc = cc + dc;
+          if (nr >= 0 && nr < s.rows && nc >= 0 && nc < s.cols && !s.revealed[nr][nc]) {
+            queue.push([nr, nc]);
+          }
+        }
+      }
+    }
+  }
+
+  sfxClick();
+  checkMsWin();
+}
+
+function toggleFlag(r, c) {
+  const s = msState;
+  if (s.gameOver || s.revealed[r][c]) return;
+  s.flagged[r][c] = !s.flagged[r][c];
+  const cell = document.querySelector(`.ms-cell[data-r="${r}"][data-c="${c}"]`);
+  cell.textContent = s.flagged[r][c] ? '🚩' : '';
+  if (s.flagged[r][c]) cell.classList.add('flagged'); else cell.classList.remove('flagged');
+  const remaining = s.mines - s.flagged.reduce((sum, row) => sum + row.filter(Boolean).length, 0);
+  document.getElementById('msMineCount').textContent = String(remaining).padStart(3,'0');
+  document.getElementById('msMines').textContent = remaining;
+  sfxClick();
+}
+
+function checkMsWin() {
+  const s = msState;
+  let allRevealed = true;
+  for (let r = 0; r < s.rows; r++) {
+    for (let c = 0; c < s.cols; c++) {
+      if (!s.revealed[r][c] && s.grid[r][c] !== -1) { allRevealed = false; break; }
+    }
+  }
+  if (allRevealed) {
+    s.gameOver = true;
+    if (s.timerId) clearTimer(s.timerId);
+    document.getElementById('msFace').textContent = '😎';
+    // 自动插旗
+    for (let r = 0; r < s.rows; r++) {
+      for (let c = 0; c < s.cols; c++) {
+        if (s.grid[r][c] === -1 && !s.flagged[r][c]) {
+          s.flagged[r][c] = true;
+          const cell = document.querySelector(`.ms-cell[data-r="${r}"][data-c="${c}"]`);
+          cell.textContent = '🚩'; cell.classList.add('flagged');
+        }
+      }
+    }
+    document.getElementById('msMineCount').textContent = '000';
+    const isBest = setBest('minesweeper', s.timer);
+    addPlay(); updateMenuStats();
+    sfxCorrect();
+    addTimer(() => {
+      showResult('💣', '扫雷成功！', `${s.timer} 秒`,
+        `${s.rows}×${s.cols} · ${s.mines} 颗雷`, isBest, resetMinesweeper, goMenu);
+    }, 400);
+  }
+}
+
+// ==================== 游戏6：蜘蛛纸牌 ====================
+let spiderState = null;
+const SPIDER_SUITS = ['♠','♥','♦','♣'];
+const SPIDER_RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+
+function startSpider() {
+  showScreen('spiderScreen');
+  spiderState = { columns: [], completed: 0, moves: 0, score: 500, selected: null, stockPile: [] };
+  initSpiderDeck();
+  renderSpider();
+}
+
+function initSpiderDeck() {
+  const s = spiderState;
+  s.columns = new Array(10).fill(null).map(() => []);
+  s.completed = 0; s.moves = 0; s.score = 500; s.selected = null;
+
+  // 1 suit (♠) for simplicity: 8 decks of spades = 104 cards
+  const deck = [];
+  for (let i = 0; i < 8; i++) {
+    SPIDER_RANKS.forEach(r => deck.push({ suit: '♠', rank: r, faceUp: false }));
+  }
+  // Shuffle
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+
+  // Deal: first 4 cols get 6 cards, rest get 5 cards = 54 cards total
+  let idx = 0;
+  for (let col = 0; col < 10; col++) {
+    const count = col < 4 ? 6 : 5;
+    for (let i = 0; i < count; i++) {
+      const card = deck[idx++];
+      card.faceUp = (i === count - 1); // Only top card face up
+      s.columns[col].push(card);
+    }
+  }
+
+  // Remaining 50 cards form stock (5 piles of 10)
+  s.stockPile = [];
+  for (let i = 0; i < 5; i++) {
+    s.stockPile.push(deck.slice(idx + i * 10, idx + (i + 1) * 10));
+  }
+
+  updateSpiderHUD();
+}
+
+function updateSpiderHUD() {
+  document.getElementById('spiderMoves').textContent = spiderState.moves;
+  document.getElementById('spiderCompleted').textContent = `${spiderState.completed}/8`;
+  document.getElementById('spiderScore').textContent = spiderState.score;
+}
+
+function renderSpider() {
+  const s = spiderState;
+  const table = document.getElementById('spiderTable');
+  table.innerHTML = '';
+
+  const maxLen = Math.max(...s.columns.map(c => c.length), 1);
+  const cardH = 80;
+  const overlap = 22;
+  const colH = Math.max(cardH + (maxLen - 1) * overlap, cardH);
+
+  s.columns.forEach((col, colIdx) => {
+    const colDiv = document.createElement('div');
+    colDiv.className = 'spider-col';
+    colDiv.style.height = colH + 'px';
+    colDiv.dataset.col = colIdx;
+    colDiv.onclick = (e) => {
+      if (e.target === colDiv || e.target.classList.contains('spider-col')) {
+        spiderColClick(colIdx);
+      }
+    };
+
+    if (col.length === 0) {
+      // Empty column placeholder
+      const empty = document.createElement('div');
+      empty.className = 'spider-card face-down';
+      empty.style.opacity = '0.2';
+      empty.style.top = '0px';
+      empty.textContent = '';
+      empty.style.cursor = 'default';
+      colDiv.appendChild(empty);
+    } else {
+      col.forEach((card, i) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'spider-card';
+        cardDiv.style.top = (i * overlap) + 'px';
+        cardDiv.style.zIndex = i;
+        if (!card.faceUp) {
+          cardDiv.classList.add('face-down');
+        } else {
+          cardDiv.textContent = card.rank + card.suit;
+          if (card.suit === '♥' || card.suit === '♦') cardDiv.classList.add('red');
+          cardDiv.onclick = (e) => { e.stopPropagation(); spiderCardClick(colIdx, i); };
+        }
+        // Highlight selected
+        if (s.selected && s.selected.col === colIdx && s.selected.idx === i) {
+          cardDiv.classList.add('selected');
+        }
+        colDiv.appendChild(cardDiv);
+      });
+    }
+    table.appendChild(colDiv);
+  });
+
+  // Render stock
+  const stockDiv = document.getElementById('spiderStock');
+  stockDiv.innerHTML = '';
+  s.stockPile.forEach((pile, i) => {
+    const pileDiv = document.createElement('div');
+    pileDiv.className = 'spider-stock-pile';
+    if (pile.length > 0) {
+      pileDiv.textContent = '🂠';
+      pileDiv.onclick = () => dealSpiderRow(i);
+    } else {
+      pileDiv.classList.add('empty');
+    }
+    stockDiv.appendChild(pileDiv);
+  });
+
+  updateSpiderHUD();
+}
+
+function spiderCardClick(colIdx, cardIdx) {
+  const s = spiderState;
+  if (s.selected && s.selected.col === colIdx && s.selected.idx === cardIdx) {
+    // Deselect
+    s.selected = null;
+    renderSpider();
+    return;
+  }
+
+  const col = s.columns[colIdx];
+  // Check if this card starts a valid movable sequence
+  if (!col[cardIdx].faceUp) return;
+
+  // Validate sequence from cardIdx to end of column
+  let validSeq = true;
+  for (let i = cardIdx; i < col.length - 1; i++) {
+    if (!col[i].faceUp || !col[i+1].faceUp) { validSeq = false; break; }
+    const r1 = SPIDER_RANKS.indexOf(col[i].rank);
+    const r2 = SPIDER_RANKS.indexOf(col[i+1].rank);
+    if (r1 !== r2 + 1 || col[i].suit !== col[i+1].suit) { validSeq = false; break; }
+  }
+
+  if (!validSeq) {
+    // If we have a selection, try to place it here
+    if (s.selected) {
+      tryPlaceSelected(colIdx);
+    }
+    return;
+  }
+
+  // If we have a selection, try to place
+  if (s.selected) {
+    if (s.selected.col === colIdx) { s.selected = null; renderSpider(); return; }
+    const placed = tryPlaceSelected(colIdx);
+    if (!placed) {
+      // Select this card instead
+      s.selected = { col: colIdx, idx: cardIdx };
+      sfxClick();
+      renderSpider();
+    }
+  } else {
+    s.selected = { col: colIdx, idx: cardIdx };
+    sfxClick();
+    renderSpider();
+  }
+}
+
+function spiderColClick(colIdx) {
+  const s = spiderState;
+  if (!s.selected) return;
+  const col = s.columns[colIdx];
+  // If empty column, can place any selected sequence
+  if (col.length === 0) {
+    const srcCol = s.columns[s.selected.col];
+    const cards = srcCol.splice(s.selected.idx);
+    s.columns[colIdx] = cards;
+    // Reveal top of source column
+    if (srcCol.length > 0) srcCol[srcCol.length - 1].faceUp = true;
+    s.selected = null; s.moves++; s.score = Math.max(0, s.score - 1);
+    checkSpiderComplete(colIdx);
+    renderSpider();
+    return;
+  }
+  tryPlaceSelected(colIdx);
+}
+
+function tryPlaceSelected(colIdx) {
+  const s = spiderState;
+  if (!s.selected || s.selected.col === colIdx) return false;
+  const srcCol = s.columns[s.selected.col];
+  const destCol = s.columns[colIdx];
+  if (destCol.length === 0) {
+    // Empty column, can place anything
+    const cards = srcCol.splice(s.selected.idx);
+    s.columns[colIdx] = cards;
+    if (srcCol.length > 0) srcCol[srcCol.length - 1].faceUp = true;
+    s.selected = null; s.moves++; s.score = Math.max(0, s.score - 1);
+    checkSpiderComplete(colIdx);
+    renderSpider(); sfxClick();
+    return true;
+  }
+
+  const topDest = destCol[destCol.length - 1];
+  const topSrc = srcCol[s.selected.idx];
+  const destRank = SPIDER_RANKS.indexOf(topDest.rank);
+  const srcRank = SPIDER_RANKS.indexOf(topSrc.rank);
+
+  if (destRank === srcRank + 1 && topDest.suit === topSrc.suit) {
+    const cards = srcCol.splice(s.selected.idx);
+    destCol.push(...cards);
+    if (srcCol.length > 0) srcCol[srcCol.length - 1].faceUp = true;
+    s.selected = null; s.moves++; s.score = Math.max(0, s.score - 1);
+    checkSpiderComplete(colIdx);
+    renderSpider(); sfxClick();
+    return true;
+  }
+
+  return false;
+}
+
+function checkSpiderComplete(colIdx) {
+  const s = spiderState;
+  const col = s.columns[colIdx];
+  if (col.length < 13) return;
+  // Check if last 13 cards form K->A
+  const seq = col.slice(-13);
+  let isFull = true;
+  for (let i = 0; i < 13; i++) {
+    const expectedRank = 12 - i; // K=12, Q=11, ..., A=0
+    const actualRank = SPIDER_RANKS.indexOf(seq[i].rank);
+    if (actualRank !== expectedRank || seq[i].suit !== seq[0].suit) { isFull = false; break; }
+  }
+  if (isFull) {
+    col.splice(-13);
+    s.completed++;
+    s.score += 100;
+    // Reveal top if any
+    if (col.length > 0) col[col.length - 1].faceUp = true;
+
+    // Show celebration
+    const table = document.getElementById('spiderTable');
+    const ce = document.createElement('div');
+    ce.className = 'spider-complete';
+    ce.textContent = seq[0].suit;
+    ce.style.position = 'absolute';
+    ce.style.left = '50%'; ce.style.top = '40%';
+    ce.style.transform = 'translate(-50%,-50%)';
+    ce.style.zIndex = '50';
+    ce.style.background = 'rgba(78,204,163,0.2)';
+    table.parentElement.appendChild(ce);
+    sfxCombo();
+    addTimer(() => ce.remove(), 1200);
+
+    if (s.completed >= 8) {
+      addTimer(() => {
+        const isBest = setBest('spider', s.score);
+        addPlay(); updateMenuStats();
+        showResult('🕷️', '恭喜通关！', `${s.score} 分`,
+          `${s.moves} 步 · 8组全部消除`, isBest, startSpider, goMenu);
+      }, 600);
+    }
+    updateSpiderHUD();
+    renderSpider();
+  }
+}
+
+function dealSpiderRow(pileIdx) {
+  const s = spiderState;
+  if (s.stockPile[pileIdx].length === 0) return;
+  // Check all columns have at least 1 card
+  for (let i = 0; i < 10; i++) {
+    if (s.columns[i].length === 0) { sfxWrong(); return; } // Can't deal with empty column
+  }
+  const cards = s.stockPile[pileIdx].splice(0);
+  for (let i = 0; i < 10; i++) {
+    cards[i].faceUp = true;
+    s.columns[i].push(cards[i]);
+  }
+  s.selected = null;
+  sfxClick();
+  renderSpider();
+}
+
+// 更新菜单最佳记录
+function updateSpiderHUD() {
+  document.getElementById('spiderMoves').textContent = spiderState.moves;
+  document.getElementById('spiderCompleted').textContent = `${spiderState.completed}/8`;
+  document.getElementById('spiderScore').textContent = spiderState.score;
+}
 let reactState = null;
 
 function startReaction() {
