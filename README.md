@@ -31,6 +31,14 @@
 
 ---
 
+## 🌐 在线体验
+
+**👉 [cecilia11-cc.github.io/study-break-fun](https://cecilia11-cc.github.io/study-break-fun/)**
+
+无需下载，直接在浏览器中打开上面链接就能玩！
+
+---
+
 ## 🚀 使用方式
 
 1. 下载/克隆整个文件夹
