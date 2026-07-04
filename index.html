@@ -37,7 +37,7 @@
   }
   .header p { color: var(--text-dim); font-size: 15px; }
 
-  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   @media (max-width: 600px) { .cards { grid-template-columns: 1fr; } }
 
   .card {
@@ -53,6 +53,7 @@
   .card.brain:hover { border-color: rgba(108,99,255,0.4); }
   .card.art:hover { border-color: rgba(255,107,157,0.4); }
   .card.zen:hover { border-color: rgba(0,212,255,0.4); }
+  .card.voxel:hover { border-color: rgba(78,204,163,0.4); }
   .card .c-icon { font-size: 52px; margin-bottom: 12px; display: block; }
   .card .c-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
   .card .c-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
@@ -63,6 +64,7 @@
   .badge-purple { background: rgba(108,99,255,0.15); color: var(--primary-glow); }
   .badge-pink { background: rgba(255,107,157,0.15); color: var(--pink); }
   .badge-cyan { background: rgba(0,212,255,0.15); color: var(--cyan); }
+  .badge-green { background: rgba(78,204,163,0.15); color: var(--success); }
 
   .footer {
     text-align: center; margin-top: 36px; padding-top: 20px;
@@ -101,6 +103,13 @@
       <div class="c-title">解压实验室</div>
       <div class="c-desc">泡泡纸 · 粒子烟花<br>彩虹流体 · 迷你钢琴</div>
       <span class="c-badge badge-cyan">4 个玩具</span>
+    </a>
+
+    <a href="voxel-world/" class="card voxel">
+      <span class="c-icon">🧱</span>
+      <div class="c-title">像素方块世界</div>
+      <div class="c-desc">3D 体素沙盒 · 建造探索<br>类似 Minecraft 的方块世界</div>
+      <span class="c-badge badge-green">3D 游戏</span>
     </a>
   </div>
 
