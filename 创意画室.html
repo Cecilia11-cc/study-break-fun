@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎨 创意画室 - 复习间隙放松画画</title>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface2: #222240;
+    --primary: #6c63ff;
+    --primary-glow: #8b83ff;
+    --success: #4ecca3;
+    --danger: #ff6b6b;
+    --warning: #ffd93d;
+    --pink: #ff6b9d;
+    --text: #e8e8f0;
+    --text-dim: #9999bb;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overflow-y: auto;
+  }
+
+  .app {
+    width: 100%; max-width: 700px;
+    padding: 20px;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeSlideIn 0.35s ease; }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === 主菜单 === */
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .icon { font-size: 56px; margin-bottom: 8px; }
+  .header h1 {
+    font-size: 28px; font-weight: 700;
+    background: linear-gradient(135deg, var(--pink), var(--warning), var(--primary-glow));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle { font-size: 14px; color: var(--text-dim); margin-top: 4px; }
+
+  .project-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 500px) { .project-grid { grid-template-columns: 1fr; } }
+
+  .project-card {
+    background: var(--surface); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--radius); padding: 22px 18px; cursor: pointer;
+    transition: var(--transition); position: relative; overflow: hidden;
+  }
+  .project-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,107,157,0.3);
+    box-shadow: 0 8px 32px rgba(255,107,157,0.1);
+  }
+  .project-card:active { transform: scale(0.97); }
+  .project-card .p-icon { font-size: 38px; margin-bottom: 8px; }
+  .project-card .p-name { font-size: 16px; font-weight: 600; }
+  .project-card .p-desc { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+  /* === 通用工具栏 === */
+  .toolbar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    padding: 12px 16px; background: var(--surface);
+    border-radius: var(--radius); margin-bottom: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .toolbar .back-btn {
+    background: var(--surface2); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text); width: 36px; height: 36px; border-radius: 50%;
+    font-size: 16px; cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .toolbar .back-btn:hover { background: rgba(255,255,255,0.1); }
+  .toolbar .title { font-weight: 700; font-size: 15px; margin-right: auto; }
+
+  /* 颜色选择器 */
+  .color-palette { display: flex; gap: 6px; flex-wrap: wrap; }
+  .color-dot {
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: var(--transition);
+    flex-shrink: 0;
+  }
+  .color-dot:hover { transform: scale(1.2); }
+  .color-dot.active { border-color: #fff; box-shadow: 0 0 12px currentColor; transform: scale(1.15); }
+
+  /* 画笔大小 */
+  .brush-sizes { display: flex; gap: 5px; align-items: center; }
+  .brush-dot {
+    border-radius: 50%; background: var(--text-dim); cursor: pointer;
+    transition: var(--transition); border: 2px solid transparent;
+  }
+  .brush-dot:hover { background: #fff; }
+  .brush-dot.active { background: #fff; border-color: var(--primary); }
+
+  .tool-btn {
+    padding: 6px 12px; border-radius: 18px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.15);
+    background: transparent; color: var(--text);
+    transition: var(--transition); font-family: inherit;
+    white-space: nowrap;
+  }
+  .tool-btn:hover { background: rgba(255,255,255,0.08); }
+  .tool-btn.danger { color: var(--danger); border-color: rgba(255,107,107,0.3); }
+  .tool-btn.danger:hover { background: rgba(255,107,107,0.1); }
+  .tool-btn.accent { color: var(--primary-glow); border-color: rgba(108,99,255,0.3); }
+
+  /* === 画布容器 === */
+  .canvas-wrapper {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  canvas { display: block; cursor: crosshair; }
+  canvas.default-cursor { cursor: crosshair; }
+  canvas.eraser-cursor { cursor: cell; }
+
+  /* === 自由涂鸦 === */
+  #doodleCanvas { background: #fff; }
+
+  /* === 对称万花筒 === */
+  #kaleidoscopeCanvas { background: #1a1a1a; }
+
+  /* === 像素画 === */
+  .pixel-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pixel-grid-size {
+    padding: 4px 10px; border-radius: 14px; font-size: 12px;
+    background: var(--surface2); color: var(--text-dim); border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; transition: var(--transition); font-family: inherit;
+  }
+  .pixel-grid-size:hover { color: #fff; }
+  .pixel-grid-size.active { color: var(--primary-glow); border-color: var(--primary); }
+
+  /* === 连点成画 === */
+  .dot-number {
+    position: absolute; font-size: 11px; font-weight: 700;
+    color: var(--primary-glow); pointer-events: none;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 6px rgba(0,0,0,0.5);
+  }
+  .connect-hint {
+    text-align: center; font-size: 13px; color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* 弹窗 */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .modal {
+    background: var(--surface2); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius); padding: 28px 24px; text-align: center;
+    min-width: 300px; max-width: 90vw;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal h2 { font-size: 20px; margin-bottom: 16px; }
+  .btn {
+    display: inline-block; padding: 10px 22px; border-radius: 22px;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition);
+    border: none; font-family: inherit; margin: 4px;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-glow); }
+  .btn-outline {
+    background: transparent; color: var(--text);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.5); }
+
+  /* 提示条 */
+  .hint-bar {
+    text-align: center; font-size: 12px; color: var(--text-dim);
+    margin-top: 10px; padding: 8px;
+    background: var(--surface); border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ========== 主菜单 ========== -->
+  <div class="screen active" id="menuScreen">
+    <div class="header">
+      <div class="icon">🎨</div>
+      <h1>创意画室</h1>
+      <div class="subtitle">复习间隙 · 放松大脑 · 释放创意</div>
+    </div>
+    <div class="project-grid">
+      <div class="project-card" onclick="startProject('doodle')">
+        <div class="p-icon">✏️</div>
+        <div class="p-name">自由涂鸦</div>
+        <div class="p-desc">随心所欲地画，多种颜色和笔刷</div>
+      </div>
+      <div class="project-card" onclick="startProject('kaleidoscope')">
+        <div class="p-icon">🪞</div>
+        <div class="p-name">对称万花筒</div>
+        <div class="p-desc">画一笔，自动镜像对称，超美图案</div>
+      </div>
+      <div class="project-card" onclick="startProject('pixel')">
+        <div class="p-icon">🔲</div>
+        <div class="p-name">像素画板</div>
+        <div class="p-desc">格子填色，做可爱的像素小图标</div>
+      </div>
+      <div class="project-card" onclick="startProject('mandala')">
+        <div class="p-icon">🌸</div>
+        <div class="p-name">曼陀罗绘制</div>
+        <div class="p-desc">极坐标对称绘画，画出精美花纹</div>
+      </div>
+      <div class="project-card" onclick="startProject('connect')">
+        <div class="p-icon">🔗</div>
+        <div class="p-name">连点成画</div>
+        <div class="p-desc">按顺序连数字，揭晓隐藏的图案</div>
+      </div>
+      <div class="project-card" onclick="startProject('spray')">
+        <div class="p-icon">🌫️</div>
+        <div class="p-name">喷漆涂鸦</div>
+        <div class="p-desc">喷枪效果，做街头风格的创作</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 自由涂鸦 ========== -->
+  <div class="screen" id="doodleScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">✏️ 自由涂鸦</span>
+      <div class="color-palette" id="doodleColors"></div>
+      <div class="brush-sizes" id="doodleBrushes"></div>
+      <button class="tool-btn" onclick="setDoodleTool('pen')" id="doodlePenBtn">🖊 画笔</button>
+      <button class="tool-btn" onclick="setDoodleTool('eraser')" id="doodleEraserBtn">🧹 橡皮</button>
+      <button class="tool-btn danger" onclick="clearDoodle()">🗑 清空</button>
+      <button class="tool-btn accent" onclick="saveCanvas('doodleCanvas')">💾 保存</button>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="doodleCanvas" width="600" height="450"></canvas>
+    </div>
+  </div>
+
+  <!-- ========== 对称万花筒 ========== -->
+  <div class="screen" id="kaleidoscopeScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">🪞 对称万花筒</span>
+      <div class="color-palette" id="kaleidoscopeColors"></div>
+      <div class="brush-sizes" id="kaleidoscopeBrushes"></div>
+      <span style="font-size:12px;color:var(--text-dim)">镜像:</span>
+      <button class="tool-btn" onclick="setMirrors(4)" id="mir4Btn">4</button>
+      <button class="tool-btn" onclick="setMirrors(6)" id="mir6Btn">6</button>
+      <button class="tool-btn" onclick="setMirrors(8)" id="mir8Btn">8</button>
+      <button class="tool-btn" onclick="setMirrors(12)" id="mir12Btn">12</button>
+      <button class="tool-btn danger" onclick="clearKaleidoscope()">🗑 清空</button>
+      <button class="tool-btn accent" onclick="saveCanvas('kaleidoscopeCanvas')">💾 保存</button>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="kaleidoscopeCanvas" width="600" height="600"></canvas>
+    </div>
+    <div class="hint-bar">💡 在画布上拖动，画笔会自动在多个方向对称复制 | 试试用不同镜像数画花纹</div>
+  </div>
+
+  <!-- ========== 像素画板 ========== -->
+  <div class="screen" id="pixelScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">🔲 像素画板</span>
+      <div class="color-palette" id="pixelColors"></div>
+      <button class="tool-btn" onclick="setPixelTool('pen')" id="pixelPenBtn">🖊 填色</button>
+      <button class="tool-btn" onclick="setPixelTool('eraser')" id="pixelEraserBtn">🧹 擦除</button>
+      <button class="tool-btn" onclick="fillPixelGrid()">🪣 填充</button>
+      <div class="pixel-tools">
+        <button class="pixel-grid-size active" onclick="setPixelGrid(16)">16×16</button>
+        <button class="pixel-grid-size" onclick="setPixelGrid(24)">24×24</button>
+        <button class="pixel-grid-size" onclick="setPixelGrid(32)">32×32</button>
+      </div>
+      <button class="tool-btn danger" onclick="clearPixel()">🗑 清空</button>
+      <button class="tool-btn accent" onclick="saveCanvas('pixelCanvas')">💾 保存</button>
+    </div>
+    <div class="canvas-wrapper" style="background:#fff;">
+      <canvas id="pixelCanvas" width="480" height="480"></canvas>
+    </div>
+    <div class="hint-bar">💡 点击格子填色，按住拖动连续填色 | 试试画一个小动物或表情包</div>
+  </div>
+
+  <!-- ========== 曼陀罗绘制 ========== -->
+  <div class="screen" id="mandalaScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">🌸 曼陀罗绘制</span>
+      <div class="color-palette" id="mandalaColors"></div>
+      <div class="brush-sizes" id="mandalaBrushes"></div>
+      <span style="font-size:12px;color:var(--text-dim)">花瓣:</span>
+      <button class="tool-btn" onclick="setMandalaPetals(6)" id="petal6Btn">6</button>
+      <button class="tool-btn" onclick="setMandalaPetals(8)" id="petal8Btn">8</button>
+      <button class="tool-btn" onclick="setMandalaPetals(12)" id="petal12Btn">12</button>
+      <button class="tool-btn" onclick="setMandalaPetals(16)" id="petal16Btn">16</button>
+      <button class="tool-btn danger" onclick="clearMandala()">🗑 清空</button>
+      <button class="tool-btn accent" onclick="saveCanvas('mandalaCanvas')">💾 保存</button>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="mandalaCanvas" width="600" height="600"></canvas>
+    </div>
+    <div class="hint-bar">💡 在画面下半部分画，上半部分会自动对称 | 从中心向外画效果最好</div>
+  </div>
+
+  <!-- ========== 连点成画 ========== -->
+  <div class="screen" id="connectScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">🔗 连点成画</span>
+      <button class="tool-btn" onclick="newConnectPuzzle()">🎲 换一张</button>
+      <button class="tool-btn danger" onclick="resetConnect()">🔄 重连</button>
+      <button class="tool-btn accent" onclick="saveCanvas('connectCanvas')">💾 保存</button>
+    </div>
+    <div class="canvas-wrapper" style="background:#fff;">
+      <canvas id="connectCanvas" width="560" height="450"></canvas>
+    </div>
+    <div class="hint-bar">💡 按数字从小到大依次点击圆点连线 | 完成后会显示图案</div>
+  </div>
+
+  <!-- ========== 喷漆涂鸦 ========== -->
+  <div class="screen" id="sprayScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">🌫️ 喷漆涂鸦</span>
+      <div class="color-palette" id="sprayColors"></div>
+      <div class="brush-sizes" id="sprayBrushes"></div>
+      <span style="font-size:12px;color:var(--text-dim)">密度:</span>
+      <input type="range" id="sprayDensity" min="5" max="50" value="20"
+        style="width:80px;accent-color:var(--primary);">
+      <button class="tool-btn danger" onclick="clearSpray()">🗑 清空</button>
+      <button class="tool-btn accent" onclick="saveCanvas('sprayCanvas')">💾 保存</button>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas id="sprayCanvas" width="600" height="450"></canvas>
+    </div>
+    <div class="hint-bar">💡 按住鼠标喷漆，松开停止 | 调节密度控制喷点多少 | 配合模板做街头艺术</div>
+  </div>
+</div>
+
+<!-- 弹窗容器 -->
+<div id="modalContainer"></div>
+
+<script>
+// ==================== 通用工具 ====================
+const COLORS_PRESET = [
+  '#000000','#ffffff','#e74c3c','#e67e22','#f39c12','#f1c40f',
+  '#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#00bcd4',
+  '#795548','#607d8b','#ff6b9d','#8b83ff',
+];
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('modalContainer').innerHTML = '';
+  stopAllDrawLoops();
+}
+
+function goMenu() {
+  stopAllDrawLoops();
+  showScreen('menuScreen');
+}
+
+let drawLoops = [];
+function stopAllDrawLoops() {
+  drawLoops.forEach(cancelAnimationFrame);
+  drawLoops = [];
+}
+
+// 颜色面板生成
+function buildColorPalette(containerId, onChange) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = COLORS_PRESET.map((clr, i) =>
+    `<div class="color-dot${i===0?' active':''}" style="background:${clr};color:${clr}"
+         data-color="${clr}" onclick="selectColor(this,'${containerId}')"></div>`
+  ).join('');
+  // 返回第一个颜色
+  return COLORS_PRESET[0];
+}
+
+function selectColor(dot, containerId) {
+  document.querySelectorAll(`#${containerId} .color-dot`).forEach(d => d.classList.remove('active'));
+  dot.classList.add('active');
+}
+
+function getSelectedColor(containerId) {
+  const active = document.querySelector(`#${containerId} .color-dot.active`);
+  return active ? active.dataset.color : '#000000';
+}
+
+// 画笔大小面板
+function buildBrushSizes(containerId, sizes, onChange) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = sizes.map((s, i) =>
+    `<div class="brush-dot${i===1?' active':''}" style="width:${Math.min(s+8,28)}px;height:${Math.min(s+8,28)}px"
+         data-size="${s}" onclick="selectBrush(this,'${containerId}')"></div>`
+  ).join('');
+}
+
+function selectBrush(dot, containerId) {
+  document.querySelectorAll(`#${containerId} .brush-dot`).forEach(d => d.classList.remove('active'));
+  dot.classList.add('active');
+}
+
+function getSelectedBrush(containerId) {
+  const active = document.querySelector(`#${containerId} .brush-dot.active`);
+  return active ? parseInt(active.dataset.size) : 4;
+}
+
+// 保存画布
+function saveCanvas(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  const link = document.createElement('a');
+  link.download = `我的画作_${new Date().toISOString().slice(0,10)}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ==================== 项目入口 ====================
+function startProject(type) {
+  stopAllDrawLoops();
+  if (type === 'doodle') startDoodle();
+  else if (type === 'kaleidoscope') startKaleidoscope();
+  else if (type === 'pixel') startPixel();
+  else if (type === 'mandala') startMandala();
+  else if (type === 'connect') startConnect();
+  else if (type === 'spray') startSpray();
+}
+
+// ==================== 1. 自由涂鸦 ====================
+let doodleState = null;
+
+function startDoodle() {
+  showScreen('doodleScreen');
+  buildColorPalette('doodleColors');
+  buildBrushSizes('doodleBrushes', [2, 4, 7, 12, 20]);
+
+  const canvas = document.getElementById('doodleCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // 初始化白色背景
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  doodleState = { canvas, ctx, tool: 'pen', drawing: false };
+
+  canvas.onmousedown = (e) => { doodleState.drawing = true; drawDoodle(e); };
+  canvas.onmouseup = canvas.onmouseleave = () => { doodleState.drawing = false; };
+  canvas.onmousemove = (e) => { if (doodleState.drawing) drawDoodle(e); };
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); doodleState.drawing = true; drawDoodle(e.touches[0]); });
+  canvas.addEventListener('touchend', () => { doodleState.drawing = false; });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (doodleState.drawing) drawDoodle(e.touches[0]); });
+
+  document.getElementById('doodlePenBtn').style.background = 'rgba(255,255,255,0.1)';
+  document.getElementById('doodleEraserBtn').style.background = '';
+}
+
+function drawDoodle(e) {
+  const { canvas, ctx, tool } = doodleState;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+
+  const size = getSelectedBrush('doodleBrushes');
+  ctx.beginPath();
+  ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+  ctx.fillStyle = tool === 'eraser' ? '#ffffff' : getSelectedColor('doodleColors');
+  ctx.fill();
+}
+
+function setDoodleTool(tool) {
+  doodleState.tool = tool;
+  document.getElementById('doodlePenBtn').style.background = tool === 'pen' ? 'rgba(255,255,255,0.1)' : '';
+  document.getElementById('doodleEraserBtn').style.background = tool === 'eraser' ? 'rgba(255,255,255,0.1)' : '';
+  const canvas = document.getElementById('doodleCanvas');
+  canvas.className = tool === 'eraser' ? 'eraser-cursor' : 'default-cursor';
+}
+
+function clearDoodle() {
+  const ctx = document.getElementById('doodleCanvas').getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 600, 450);
+}
+
+// ==================== 2. 对称万花筒 ====================
+let kaleidoscopeState = null;
+
+function startKaleidoscope() {
+  showScreen('kaleidoscopeScreen');
+  buildColorPalette('kaleidoscopeColors');
+  buildBrushSizes('kaleidoscopeBrushes', [2, 4, 7, 12]);
+
+  const canvas = document.getElementById('kaleidoscopeCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  kaleidoscopeState = { canvas, ctx, drawing: false, mirrors: 6, cx: canvas.width/2, cy: canvas.height/2 };
+  setMirrors(6); // 默认选中
+}
+
+function setMirrors(n) {
+  kaleidoscopeState.mirrors = n;
+  ['mir4','mir6','mir8','mir12'].forEach(id => {
+    document.getElementById(id+'Btn').style.background = '';
+  });
+  document.getElementById('mir'+n+'Btn').style.background = 'rgba(255,255,255,0.1)';
+}
+
+function clearKaleidoscope() {
+  const { ctx, canvas } = kaleidoscopeState;
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// 在万花筒canvas上绑定事件
+(function initKaleidoscope() {
+  const canvas = document.getElementById('kaleidoscopeCanvas');
+  canvas.onmousedown = (e) => { if (kaleidoscopeState) { kaleidoscopeState.drawing = true; drawKaleidoscope(e); } };
+  canvas.onmouseup = canvas.onmouseleave = () => { if (kaleidoscopeState) kaleidoscopeState.drawing = false; };
+  canvas.onmousemove = (e) => { if (kaleidoscopeState && kaleidoscopeState.drawing) drawKaleidoscope(e); };
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (kaleidoscopeState) { kaleidoscopeState.drawing = true; drawKaleidoscope(e.touches[0]); }
+  }, {passive: false});
+  canvas.addEventListener('touchend', () => { if (kaleidoscopeState) kaleidoscopeState.drawing = false; });
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (kaleidoscopeState && kaleidoscopeState.drawing) drawKaleidoscope(e.touches[0]);
+  }, {passive: false});
+})();
+
+function drawKaleidoscope(e) {
+  const { canvas, ctx, mirrors, cx, cy } = kaleidoscopeState;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  const size = getSelectedBrush('kaleidoscopeBrushes');
+  const color = getSelectedColor('kaleidoscopeColors');
+
+  // 计算极坐标
+  const dx = mx - cx;
+  const dy = my - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const baseAngle = Math.atan2(dy, dx);
+
+  // 在每个镜像角度画点
+  for (let i = 0; i < mirrors; i++) {
+    const angle = baseAngle + (Math.PI * 2 / mirrors) * i;
+    const px = cx + Math.cos(angle) * dist;
+    const py = cy + Math.sin(angle) * dist;
+
+    ctx.beginPath();
+    ctx.arc(px, py, size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+}
+
+// ==================== 3. 像素画板 ====================
+let pixelState = null;
+
+function startPixel() {
+  showScreen('pixelScreen');
+  buildColorPalette('pixelColors');
+
+  pixelState = { gridSize: 16, tool: 'pen' };
+  document.getElementById('pixelPenBtn').style.background = 'rgba(255,255,255,0.1)';
+
+  initPixelGrid(16);
+}
+
+function initPixelGrid(size) {
+  const canvas = document.getElementById('pixelCanvas');
+  const cellSize = 480 / size;
+  canvas.width = cellSize * size;
+  canvas.height = cellSize * size;
+  const ctx = canvas.getContext('2d');
+
+  // 白底
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 画网格线
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= size; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * cellSize, 0);
+    ctx.lineTo(i * cellSize, canvas.height);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, i * cellSize);
+    ctx.lineTo(canvas.width, i * cellSize);
+    ctx.stroke();
+  }
+
+  pixelState.gridSize = size;
+  pixelState.cellSize = cellSize;
+  pixelState.grid = new Array(size * size).fill('#ffffff');
+  pixelState.ctx = ctx;
+  pixelState.canvas = canvas;
+
+  // 绑定事件
+  canvas.onmousedown = (e) => { pixelState.mouseDown = true; paintPixel(e); };
+  canvas.onmouseup = canvas.onmouseleave = () => { pixelState.mouseDown = false; };
+  canvas.onmousemove = (e) => { if (pixelState.mouseDown) paintPixel(e); };
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); pixelState.mouseDown = true; paintPixel(e.touches[0]); });
+  canvas.addEventListener('touchend', () => { pixelState.mouseDown = false; });
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (pixelState.mouseDown) paintPixel(e.touches[0]); });
+
+  document.querySelectorAll('.pixel-grid-size').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.pixel-grid-size[onclick="setPixelGrid(${size})"]`).classList.add('active');
+}
+
+function paintPixel(e) {
+  const { canvas, cellSize, grid, gridSize } = pixelState;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = Math.floor((e.clientX - rect.left) * scaleX / cellSize);
+  const y = Math.floor((e.clientY - rect.top) * scaleY / cellSize);
+  if (x < 0 || y < 0 || x >= gridSize || y >= gridSize) return;
+
+  const idx = y * gridSize + x;
+  const color = pixelState.tool === 'eraser' ? '#ffffff' : getSelectedColor('pixelColors');
+  grid[idx] = color;
+
+  const ctx = pixelState.ctx;
+  ctx.fillStyle = color;
+  ctx.fillRect(x * cellSize + 0.5, y * cellSize + 0.5, cellSize - 1, cellSize - 1);
+}
+
+function setPixelTool(tool) {
+  pixelState.tool = tool;
+  document.getElementById('pixelPenBtn').style.background = tool === 'pen' ? 'rgba(255,255,255,0.1)' : '';
+  document.getElementById('pixelEraserBtn').style.background = tool === 'eraser' ? 'rgba(255,255,255,0.1)' : '';
+}
+
+function setPixelGrid(size) {
+  initPixelGrid(size);
+}
+
+function fillPixelGrid() {
+  const { grid, gridSize, ctx, cellSize } = pixelState;
+  const color = getSelectedColor('pixelColors');
+  for (let i = 0; i < grid.length; i++) {
+    grid[i] = color;
+    const x = i % gridSize;
+    const y = Math.floor(i / gridSize);
+    ctx.fillStyle = color;
+    ctx.fillRect(x * cellSize + 0.5, y * cellSize + 0.5, cellSize - 1, cellSize - 1);
+  }
+}
+
+function clearPixel() {
+  const { grid, gridSize, ctx, cellSize } = pixelState;
+  for (let i = 0; i < grid.length; i++) {
+    grid[i] = '#ffffff';
+    const x = i % gridSize;
+    const y = Math.floor(i / gridSize);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x * cellSize + 0.5, y * cellSize + 0.5, cellSize - 1, cellSize - 1);
+  }
+}
+
+// ==================== 4. 曼陀罗绘制 ====================
+let mandalaState = null;
+
+function startMandala() {
+  showScreen('mandalaScreen');
+  buildColorPalette('mandalaColors');
+  buildBrushSizes('mandalaBrushes', [2, 4, 7, 10]);
+
+  const canvas = document.getElementById('mandalaCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  mandalaState = { canvas, ctx, drawing: false, petals: 8, cx: canvas.width/2, cy: canvas.height/2 };
+  setMandalaPetals(8);
+}
+
+function setMandalaPetals(n) {
+  mandalaState.petals = n;
+  ['petal6','petal8','petal12','petal16'].forEach(id => {
+    document.getElementById(id+'Btn').style.background = '';
+  });
+  document.getElementById('petal'+n+'Btn').style.background = 'rgba(255,255,255,0.1)';
+}
+
+function clearMandala() {
+  const { ctx, canvas } = mandalaState;
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+(function initMandala() {
+  const canvas = document.getElementById('mandalaCanvas');
+  canvas.onmousedown = (e) => { if (mandalaState) { mandalaState.drawing = true; drawMandala(e); } };
+  canvas.onmouseup = canvas.onmouseleave = () => { if (mandalaState) mandalaState.drawing = false; };
+  canvas.onmousemove = (e) => { if (mandalaState && mandalaState.drawing) drawMandala(e); };
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (mandalaState) { mandalaState.drawing = true; drawMandala(e.touches[0]); }
+  }, {passive: false});
+  canvas.addEventListener('touchend', () => { if (mandalaState) mandalaState.drawing = false; });
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (mandalaState && mandalaState.drawing) drawMandala(e.touches[0]);
+  }, {passive: false});
+})();
+
+function drawMandala(e) {
+  const { canvas, ctx, petals, cx, cy } = mandalaState;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  const size = getSelectedBrush('mandalaBrushes');
+  const color = getSelectedColor('mandalaColors');
+  const dx = mx - cx;
+  const dy = my - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const baseAngle = Math.atan2(dy, dx);
+
+  // 水平翻转：在y轴另一侧也画
+  const mirrorY = cy - dy;
+
+  for (let i = 0; i < petals; i++) {
+    const angle = baseAngle + (Math.PI * 2 / petals) * i;
+
+    // 上半部分（原始位置）
+    const px1 = cx + Math.cos(angle) * dist;
+    const py1 = cy + Math.sin(angle) * dist;
+    ctx.beginPath();
+    ctx.arc(px1, py1, size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    // 下半部分（y轴镜像）
+    const px2 = cx + Math.cos(-angle) * dist;
+    const py2 = cy + Math.sin(-angle) * dist;
+    ctx.beginPath();
+    ctx.arc(px2, py2, size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+}
+
+// ==================== 5. 连点成画 ====================
+let connectState = null;
+
+// 预设图案（归一化坐标，之后缩放到画布）
+const DOT_PUZZLES = [
+  { name: '⭐ 五角星', dots: [
+    [0.5,0.08],[0.62,0.35],[0.92,0.38],[0.7,0.58],[0.78,0.88],
+    [0.5,0.72],[0.22,0.88],[0.3,0.58],[0.08,0.38],[0.38,0.35]
+  ]},
+  { name: '❤️ 爱心', dots: [
+    [0.5,0.9],[0.5,0.7],[0.4,0.55],[0.25,0.4],[0.15,0.28],
+    [0.18,0.18],[0.30,0.15],[0.42,0.22],[0.5,0.35],[0.58,0.22],
+    [0.70,0.15],[0.82,0.18],[0.85,0.28],[0.75,0.4],[0.6,0.55],[0.5,0.7]
+  ]},
+  { name: '🏠 小房子', dots: [
+    [0.5,0.1],[0.15,0.42],[0.15,0.88],[0.85,0.88],[0.85,0.42],
+    [0.5,0.1],[0.5,0.42],[0.3,0.88],[0.7,0.88],[0.5,0.42]
+  ]},
+  { name: '🐟 小鱼', dots: [
+    [0.3,0.5],[0.5,0.3],[0.7,0.42],[0.85,0.5],[0.7,0.58],
+    [0.5,0.7],[0.3,0.5],[0.5,0.5],[0.7,0.5],[0.85,0.5]
+  ]},
+  { name: '🚀 火箭', dots: [
+    [0.5,0.06],[0.4,0.25],[0.38,0.55],[0.2,0.75],[0.2,0.9],
+    [0.5,0.78],[0.8,0.9],[0.8,0.75],[0.62,0.55],[0.6,0.25]
+  ]},
+  { name: '🦋 蝴蝶', dots: [
+    [0.5,0.4],[0.38,0.25],[0.25,0.15],[0.15,0.22],[0.2,0.35],
+    [0.3,0.42],[0.5,0.45],[0.7,0.42],[0.8,0.35],[0.85,0.22],
+    [0.75,0.15],[0.62,0.25],[0.5,0.4],[0.5,0.6],[0.42,0.75],[0.5,0.88]
+  ]}
+];
+
+function startConnect() {
+  showScreen('connectScreen');
+  const canvas = document.getElementById('connectCanvas');
+  canvas.width = 560; canvas.height = 450;
+  connectState = { canvas, ctx: canvas.getContext('2d'), dots: [], connected: [], puzzleIdx: 0 };
+  newConnectPuzzle();
+}
+
+function newConnectPuzzle() {
+  const state = connectState;
+  // 随机选图案
+  state.puzzleIdx = Math.floor(Math.random() * DOT_PUZZLES.length);
+  const puzzle = DOT_PUZZLES[state.puzzleIdx];
+
+  const { canvas } = state;
+  const padX = 40;
+  const padY = 40;
+  const w = canvas.width - padX * 2;
+  const h = canvas.height - padY * 2;
+
+  state.dots = puzzle.dots.map(([rx, ry]) => ({
+    x: padX + rx * w,
+    y: padY + ry * h,
+  }));
+  state.connected = [];
+  state.nextDot = 0; // 下一个要连的点索引（0-based）
+
+  drawConnect();
+}
+
+function drawConnect() {
+  const { canvas, ctx, dots, connected } = connectState;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 画已连接的线
+  if (connected.length > 1) {
+    ctx.strokeStyle = '#6c63ff';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(connected[0].x, connected[0].y);
+    for (let i = 1; i < connected.length; i++) {
+      ctx.lineTo(connected[i].x, connected[i].y);
+    }
+    ctx.stroke();
+  }
+
+  // 画点和数字
+  dots.forEach((dot, i) => {
+    const isConnected = connected.includes(dot);
+    const isNext = i === connectState.nextDot;
+
+    // 外圈
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y, isNext ? 14 : 11, 0, Math.PI * 2);
+    ctx.fillStyle = isConnected ? 'rgba(108,99,255,0.3)' : isNext ? 'rgba(108,99,255,0.15)' : 'rgba(0,0,0,0.05)';
+    ctx.fill();
+    ctx.strokeStyle = isConnected ? '#6c63ff' : isNext ? '#8b83ff' : '#ccc';
+    ctx.lineWidth = isNext ? 2.5 : 2;
+    ctx.stroke();
+
+    // 内圈
+    ctx.beginPath();
+    ctx.arc(dot.x, dot.y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = isConnected ? '#6c63ff' : '#fff';
+    ctx.fill();
+    ctx.strokeStyle = isNext ? '#8b83ff' : '#bbb';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 数字
+    ctx.fillStyle = isConnected ? '#fff' : '#555';
+    ctx.font = `${isNext ? 'bold ' : ''}10px 'Segoe UI'`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(i + 1, dot.x, dot.y);
+  });
+}
+
+// 处理点击
+(function initConnect() {
+  const canvas = document.getElementById('connectCanvas');
+  canvas.onclick = (e) => {
+    if (!connectState) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+
+    // 找到最近的未连接的点
+    const { dots, connected, nextDot } = connectState;
+    if (nextDot >= dots.length) return;
+
+    const targetDot = dots[nextDot];
+    const dist = Math.sqrt((mx - targetDot.x) ** 2 + (my - targetDot.y) ** 2);
+
+    if (dist < 22) {
+      connected.push(targetDot);
+      connectState.nextDot++;
+      drawConnect();
+
+      // 检查是否完成
+      if (connectState.nextDot >= dots.length) {
+        // 闭合连线（首尾相连）
+        setTimeout(() => {
+          const ctx = connectState.ctx;
+          ctx.strokeStyle = '#6c63ff';
+          ctx.lineWidth = 3;
+          ctx.lineCap = 'round';
+          ctx.setLineDash([6, 4]);
+          ctx.beginPath();
+          ctx.moveTo(connected[connected.length - 1].x, connected[connected.length - 1].y);
+          ctx.lineTo(connected[0].x, connected[0].y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // 完成提示
+          const puzzle = DOT_PUZZLES[connectState.puzzleIdx];
+          showModal('🎉', '图案完成！', `你画出了：${puzzle.name}`, true, newConnectPuzzle);
+        }, 300);
+      }
+    }
+  };
+})();
+
+function resetConnect() {
+  if (!connectState) return;
+  connectState.connected = [];
+  connectState.nextDot = 0;
+  drawConnect();
+}
+
+// ==================== 6. 喷漆涂鸦 ====================
+let sprayState = null;
+
+function startSpray() {
+  showScreen('sprayScreen');
+  buildColorPalette('sprayColors');
+  buildBrushSizes('sprayBrushes', [15, 25, 40, 60]);
+
+  const canvas = document.getElementById('sprayCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  sprayState = { canvas, ctx, spraying: false };
+
+  canvas.onmousedown = (e) => { sprayState.spraying = true; sprayLoop(); };
+  canvas.onmouseup = canvas.onmouseleave = () => { sprayState.spraying = false; };
+  canvas.onmousemove = (e) => { sprayState.lastEvent = e; };
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    sprayState.spraying = true;
+    sprayState.lastEvent = e.touches[0];
+    sprayLoop();
+  });
+  canvas.addEventListener('touchend', () => { sprayState.spraying = false; });
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    sprayState.lastEvent = e.touches[0];
+  });
+}
+
+function sprayLoop() {
+  if (!sprayState || !sprayState.spraying) return;
+
+  const { canvas, ctx, lastEvent } = sprayState;
+  if (!lastEvent) { drawLoops.push(requestAnimationFrame(sprayLoop)); return; }
+
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const cx = (lastEvent.clientX - rect.left) * scaleX;
+  const cy = (lastEvent.clientY - rect.top) * scaleY;
+
+  const radius = getSelectedBrush('sprayBrushes');
+  const density = parseInt(document.getElementById('sprayDensity').value);
+  const color = getSelectedColor('sprayColors');
+
+  // 在圆形区域内随机喷点
+  for (let i = 0; i < density; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * radius;
+    const px = cx + Math.cos(angle) * dist;
+    const py = cy + Math.sin(angle) * dist;
+
+    ctx.beginPath();
+    ctx.arc(px, py, Math.random() * 2.5 + 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    // 随机透明度，更自然
+    ctx.globalAlpha = Math.random() * 0.5 + 0.3;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  drawLoops.push(requestAnimationFrame(sprayLoop));
+}
+
+function clearSpray() {
+  const ctx = document.getElementById('sprayCanvas').getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 600, 450);
+}
+
+// ==================== 弹窗 ====================
+function showModal(icon, title, msg, showNewBtn, onNew) {
+  const c = document.getElementById('modalContainer');
+  c.innerHTML = `
+    <div class="modal-overlay" onclick="event.target===this && (this.parentElement.innerHTML='')">
+      <div class="modal">
+        <div style="font-size:48px;margin-bottom:8px">${icon}</div>
+        <h2>${title}</h2>
+        <p style="color:var(--text-dim);margin-bottom:16px">${msg}</p>
+        ${showNewBtn ? '<button class="btn btn-primary" id="modalNewBtn">🎲 换一张</button>' : ''}
+        <button class="btn btn-outline" id="modalCloseBtn">关闭</button>
+      </div>
+    </div>`;
+  if (showNewBtn) document.getElementById('modalNewBtn').onclick = () => { c.innerHTML = ''; onNew(); };
+  document.getElementById('modalCloseBtn').onclick = () => { c.innerHTML = ''; };
+}
+
+// ==================== 键盘快捷键 ====================
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') goMenu();
+  if (e.ctrlKey && e.key === 's') {
+    e.preventDefault();
+    // 保存当前活跃的画布
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen) {
+      const canvas = activeScreen.querySelector('canvas');
+      if (canvas) saveCanvas(canvas.id);
+    }
+  }
+});
+</script>
+</body>
+</html>

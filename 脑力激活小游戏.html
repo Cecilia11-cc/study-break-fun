@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 脑力激活 - 考试复习间隙小游戏</title>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface2: #222240;
+    --primary: #6c63ff;
+    --primary-glow: #8b83ff;
+    --success: #4ecca3;
+    --danger: #ff6b6b;
+    --warning: #ffd93d;
+    --text: #e8e8f0;
+    --text-dim: #9999bb;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 背景动画粒子 */
+  .bg-particles {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--primary);
+    opacity: 0.08;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 0.1; }
+    90% { opacity: 0.05; }
+    100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+  }
+
+  .app {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 560px;
+    padding: 20px;
+  }
+
+  /* === 屏幕切换 === */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeSlideIn 0.35s ease; }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === 主菜单 === */
+  .header {
+    text-align: center; margin-bottom: 32px;
+  }
+  .header .icon { font-size: 56px; margin-bottom: 8px; }
+  .header h1 {
+    font-size: 28px; font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-glow), var(--success));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle {
+    font-size: 14px; color: var(--text-dim); margin-top: 4px;
+  }
+
+  .stats-bar {
+    display: flex; gap: 12px; justify-content: center;
+    margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 24px; padding: 8px 18px;
+    font-size: 13px; color: var(--text-dim);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-chip .val { color: var(--primary-glow); font-weight: 700; font-size: 16px; }
+
+  .game-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .game-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--radius);
+    padding: 22px 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative; overflow: hidden;
+  }
+  .game-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(108,99,255,0.3);
+    box-shadow: 0 8px 32px rgba(108,99,255,0.12);
+  }
+  .game-card:active { transform: scale(0.97); }
+  .game-card .g-icon { font-size: 36px; margin-bottom: 8px; }
+  .game-card .g-name { font-size: 16px; font-weight: 600; }
+  .game-card .g-desc { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .game-card .g-best {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 11px; color: var(--warning); font-weight: 600;
+    opacity: 0.8;
+  }
+
+  /* === 游戏通用布局 === */
+  .game-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .back-btn {
+    background: var(--surface); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text); width: 40px; height: 40px; border-radius: 50%;
+    font-size: 18px; cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .back-btn:hover { background: var(--surface2); }
+  .game-title { font-size: 18px; font-weight: 700; }
+  .game-hud { display: flex; gap: 16px; align-items: center; }
+  .hud-item { text-align: center; }
+  .hud-item .hud-val { font-size: 22px; font-weight: 700; color: var(--primary-glow); }
+  .hud-item .hud-label { font-size: 11px; color: var(--text-dim); }
+
+  .game-area {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    min-height: 320px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative; overflow: hidden;
+  }
+
+  /* === 结果弹窗 === */
+  .result-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .result-card {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    padding: 32px 28px; text-align: center;
+    min-width: 300px; max-width: 90vw;
+    animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .result-card .r-icon { font-size: 56px; margin-bottom: 12px; }
+  .result-card .r-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .result-card .r-score { font-size: 48px; font-weight: 800; color: var(--primary-glow); }
+  .result-card .r-detail { font-size: 13px; color: var(--text-dim); margin: 8px 0 20px; }
+  .result-card .r-best { font-size: 14px; color: var(--warning); margin-bottom: 16px; }
+  .btn {
+    display: inline-block; padding: 12px 28px; border-radius: 28px;
+    font-size: 15px; font-weight: 600; cursor: pointer; transition: var(--transition);
+    border: none; font-family: inherit;
+  }
+  .btn-primary { background: var(--primary); color: #fff; margin: 4px; }
+  .btn-primary:hover { background: var(--primary-glow); box-shadow: 0 4px 20px rgba(108,99,255,0.3); }
+  .btn-outline {
+    background: transparent; color: var(--text);
+    border: 1px solid rgba(255,255,255,0.2); margin: 4px;
+  }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+
+  /* === 记忆翻牌 === */
+  .memory-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%; max-width: 360px;
+  }
+  .memory-card {
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface2);
+    border: 2px solid rgba(255,255,255,0.08);
+    transition: all 0.2s ease;
+    position: relative;
+    transform-style: preserve-3d;
+  }
+  .memory-card.flipped, .memory-card.matched {
+    background: var(--primary);
+    border-color: var(--primary-glow);
+    transform: rotateY(180deg);
+  }
+  .memory-card.matched {
+    background: var(--success);
+    border-color: var(--success);
+    opacity: 0.7;
+  }
+  .memory-card .face {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    backface-visibility: hidden;
+    border-radius: var(--radius-sm);
+  }
+  .memory-card .back {
+    background: var(--surface2);
+    font-size: 24px; color: var(--text-dim);
+  }
+  .memory-card .front {
+    transform: rotateY(180deg);
+  }
+
+  /* === 心算挑战 === */
+  .math-problem {
+    font-size: 42px; font-weight: 800; margin-bottom: 16px;
+    letter-spacing: 2px;
+  }
+  .math-timer-bar {
+    width: 100%; height: 6px; background: var(--surface2);
+    border-radius: 3px; margin-bottom: 20px; overflow: hidden;
+  }
+  .math-timer-fill {
+    height: 100%; background: var(--primary);
+    border-radius: 3px; transition: width 0.1s linear;
+    width: 100%;
+  }
+  .math-timer-fill.warning { background: var(--warning); }
+  .math-timer-fill.danger { background: var(--danger); }
+  .math-input-row {
+    display: flex; gap: 10px; width: 100%; max-width: 300px;
+  }
+  .math-input {
+    flex: 1; padding: 14px 16px; font-size: 20px; font-weight: 700;
+    border-radius: var(--radius-sm); border: 2px solid rgba(255,255,255,0.1);
+    background: var(--surface2); color: var(--text); text-align: center;
+    outline: none; font-family: inherit;
+    transition: var(--transition);
+  }
+  .math-input:focus { border-color: var(--primary); }
+  .math-submit {
+    padding: 14px 22px; font-size: 18px; font-weight: 700;
+    border-radius: var(--radius-sm); border: none;
+    background: var(--primary); color: #fff; cursor: pointer;
+    transition: var(--transition);
+  }
+  .math-submit:hover { background: var(--primary-glow); }
+  .math-feedback {
+    font-size: 15px; font-weight: 600; margin-top: 12px; height: 24px;
+  }
+
+  /* === 色词冲突 (Stroop) === */
+  .stroop-word {
+    font-size: 64px; font-weight: 900; margin-bottom: 24px;
+    transition: color 0.15s ease;
+    letter-spacing: 4px;
+  }
+  .stroop-colors {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 12px; width: 100%; max-width: 320px;
+  }
+  .stroop-btn {
+    padding: 16px; border-radius: var(--radius-sm);
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.15);
+    color: #fff; transition: var(--transition);
+    text-align: center;
+  }
+  .stroop-btn:hover { transform: scale(1.04); }
+  .stroop-btn:active { transform: scale(0.95); }
+  .stroop-btn.red { background: #e74c3c; }
+  .stroop-btn.blue { background: #3498db; }
+  .stroop-btn.green { background: #2ecc71; }
+  .stroop-btn.yellow { background: #f39c12; color: #333; }
+
+  /* === 反应点击 === */
+  .react-zone {
+    width: 200px; height: 200px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.1s ease;
+    font-size: 16px; font-weight: 600;
+  }
+  .react-zone.waiting {
+    background: var(--danger);
+    box-shadow: 0 0 40px rgba(255,107,107,0.3);
+  }
+  .react-zone.ready {
+    background: var(--success);
+    box-shadow: 0 0 40px rgba(78,204,163,0.4);
+  }
+  .react-zone.clicked {
+    background: var(--primary);
+    box-shadow: 0 0 40px rgba(108,99,255,0.4);
+  }
+  .react-instruction { font-size: 14px; color: var(--text-dim); margin-top: 16px; }
+
+  /* === 倒计时开场 === */
+  .countdown {
+    font-size: 80px; font-weight: 900;
+    color: var(--primary-glow);
+    animation: countPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes countPop {
+    0% { transform: scale(2); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* === 连击特效 === */
+  .combo-pop {
+    position: absolute; font-size: 28px; font-weight: 900;
+    color: var(--warning);
+    pointer-events: none;
+    animation: comboUp 0.8s ease forwards;
+  }
+  @keyframes comboUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 1; }
+    100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
+  }
+
+  /* 响应式 */
+  @media (max-width: 480px) {
+    .game-grid { grid-template-columns: 1fr; }
+    .memory-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .memory-card { font-size: 24px; }
+    .stroop-word { font-size: 44px; }
+    .math-problem { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 背景粒子 -->
+<div class="bg-particles" id="particles"></div>
+
+<div class="app">
+  <!-- ========== 主菜单 ========== -->
+  <div class="screen active" id="menuScreen">
+    <div class="header">
+      <div class="icon">🧠</div>
+      <h1>脑力激活</h1>
+      <div class="subtitle">考试复习间隙 · 给大脑换个节奏</div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-chip">🎯 总场次 <span class="val" id="totalPlays">0</span></div>
+      <div class="stat-chip">⚡ 连击王 <span class="val" id="maxCombo">0</span></div>
+    </div>
+    <div class="game-grid">
+      <div class="game-card" onclick="startGame('memory')">
+        <div class="g-icon">🃏</div>
+        <div class="g-name">记忆翻牌</div>
+        <div class="g-desc">记住位置，配对消除</div>
+        <div class="g-best" id="bestMemory">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('math')">
+        <div class="g-icon">🔢</div>
+        <div class="g-name">心算挑战</div>
+        <div class="g-desc">限时口算，越快越好</div>
+        <div class="g-best" id="bestMath">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('stroop')">
+        <div class="g-icon">🌈</div>
+        <div class="g-name">色词冲突</div>
+        <div class="g-desc">念颜色不念字，挑战 Stroop 效应</div>
+        <div class="g-best" id="bestStroop">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('reaction')">
+        <div class="g-icon">⚡</div>
+        <div class="g-name">反应点击</div>
+        <div class="g-desc">测试你的反应速度</div>
+        <div class="g-best" id="bestReaction">--</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 记忆翻牌 ========== -->
+  <div class="screen" id="memoryScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">🃏 记忆翻牌</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="memMoves">0</div><div class="hud-label">步数</div></div>
+        <div class="hud-item"><div class="hud-val" id="memPairs">0/8</div><div class="hud-label">配对</div></div>
+        <div class="hud-item"><div class="hud-val" id="memTime">0s</div><div class="hud-label">时间</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="memoryArea">
+      <div class="memory-grid" id="memoryGrid"></div>
+    </div>
+  </div>
+
+  <!-- ========== 心算挑战 ========== -->
+  <div class="screen" id="mathScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">🔢 心算挑战</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="mathScore">0</div><div class="hud-label">得分</div></div>
+        <div class="hud-item"><div class="hud-val" id="mathCombo">0🔥</div><div class="hud-label">连击</div></div>
+        <div class="hud-item"><div class="hud-val" id="mathRound">1/20</div><div class="hud-label">题号</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="mathArea">
+      <div class="math-timer-bar"><div class="math-timer-fill" id="mathTimerFill"></div></div>
+      <div class="math-problem" id="mathProblem">12 + 34 = ?</div>
+      <div class="math-input-row">
+        <input type="number" class="math-input" id="mathInput" placeholder="?" autocomplete="off">
+        <button class="math-submit" onclick="submitMath()">✓</button>
+      </div>
+      <div class="math-feedback" id="mathFeedback"></div>
+    </div>
+  </div>
+
+  <!-- ========== 色词冲突 ========== -->
+  <div class="screen" id="stroopScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">🌈 色词冲突</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="stroopScore">0</div><div class="hud-label">得分</div></div>
+        <div class="hud-item"><div class="hud-val" id="stroopCombo">0🔥</div><div class="hud-label">连击</div></div>
+        <div class="hud-item"><div class="hud-val" id="stroopRound">1/30</div><div class="hud-label">题号</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="stroopArea">
+      <div class="stroop-word" id="stroopWord">红色</div>
+      <div class="stroop-colors" id="stroopColors"></div>
+    </div>
+  </div>
+
+  <!-- ========== 反应点击 ========== -->
+  <div class="screen" id="reactionScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">⚡ 反应点击</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="reactRound">1/5</div><div class="hud-label">轮次</div></div>
+        <div class="hud-item"><div class="hud-val" id="reactBest">---</div><div class="hud-label">最快</div></div>
+        <div class="hud-item"><div class="hud-val" id="reactAvg">---</div><div class="hud-label">平均</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="reactionArea">
+      <div class="react-zone waiting" id="reactZone">等待中...</div>
+      <div class="react-instruction" id="reactInstruction">看到绿色立即点击！</div>
+    </div>
+  </div>
+</div>
+
+<!-- 结果弹窗容器 -->
+<div id="resultContainer"></div>
+
+<script>
+// ==================== 音效系统 ====================
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function initAudio() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+}
+function beep(freq, duration, type = 'sine', vol = 0.08) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+function sfxCorrect() { beep(523, 0.12); setTimeout(() => beep(659, 0.1), 100); }
+function sfxWrong() { beep(200, 0.25, 'square', 0.05); }
+function sfxClick() { beep(800, 0.06, 'sine', 0.04); }
+function sfxCombo() { beep(880, 0.08); setTimeout(() => beep(1100, 0.1), 60); }
+function sfxCountdown() { beep(440, 0.15, 'triangle', 0.06); }
+
+// ==================== 存储 ====================
+const STORE_KEY = 'brainbreak_stats';
+function loadStats() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch { return {}; }
+}
+function saveStats(stats) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(stats)); }
+  catch {}
+}
+function getBest(game) { return loadStats()[game] || null; }
+function setBest(game, score) {
+  const s = loadStats();
+  const prev = s[game];
+  if (!prev || score > prev) { s[game] = score; saveStats(s); return true; }
+  return false;
+}
+function addPlay() {
+  const s = loadStats();
+  s.totalPlays = (s.totalPlays || 0) + 1;
+  saveStats(s);
+}
+
+// ==================== 导航 ====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('resultContainer').innerHTML = '';
+}
+function goMenu() {
+  currentGame = null;
+  stopAllTimers();
+  showScreen('menuScreen');
+  updateMenuStats();
+}
+function updateMenuStats() {
+  const s = loadStats();
+  document.getElementById('totalPlays').textContent = s.totalPlays || 0;
+  document.getElementById('maxCombo').textContent = s.maxCombo || 0;
+
+  const formatBest = (v) => v !== null && v !== undefined ? v : '--';
+  document.getElementById('bestMemory').textContent = s.memory ? `${s.memory}步` : '--';
+  document.getElementById('bestMath').textContent = formatBest(s.math);
+  document.getElementById('bestStroop').textContent = formatBest(s.stroop);
+  document.getElementById('bestReaction').textContent = s.reaction ? `${s.reaction}ms` : '--';
+}
+
+// ==================== 结果弹窗 ====================
+function showResult(icon, title, score, detail, isNewBest, onReplay, onMenu) {
+  const c = document.getElementById('resultContainer');
+  c.innerHTML = `
+    <div class="result-overlay" onclick="event.target===this && (this.parentElement.innerHTML='')">
+      <div class="result-card">
+        <div class="r-icon">${icon}</div>
+        <div class="r-title">${title}</div>
+        <div class="r-score">${score}</div>
+        <div class="r-detail">${detail}</div>
+        ${isNewBest ? '<div class="r-best">🏆 新的最佳记录！</div>' : ''}
+        <button class="btn btn-primary" id="btnReplay">🔄 再来一局</button>
+        <button class="btn btn-outline" id="btnMenu">🏠 返回菜单</button>
+      </div>
+    </div>`;
+  document.getElementById('btnReplay').onclick = () => { c.innerHTML = ''; onReplay(); };
+  document.getElementById('btnMenu').onclick = () => { c.innerHTML = ''; onMenu(); goMenu(); };
+  if (isNewBest) sfxCombo();
+}
+
+// ==================== 计时器管理 ====================
+let timers = [];
+function addTimer(fn, ms) {
+  const id = setTimeout(fn, ms);
+  timers.push(id); return id;
+}
+function addInterval(fn, ms) {
+  const id = setInterval(fn, ms);
+  timers.push(id); return id;
+}
+function stopAllTimers() {
+  timers.forEach(clearTimeout); timers.forEach(clearInterval); timers = [];
+}
+function clearTimer(id) {
+  clearTimeout(id); clearInterval(id);
+  timers = timers.filter(t => t !== id);
+}
+
+// ==================== 当前游戏状态 ====================
+let currentGame = null;
+
+// ==================== 背景粒子 ====================
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 6 + 2;
+    p.style.width = size + 'px'; p.style.height = size + 'px';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (Math.random() * 12 + 8) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    container.appendChild(p);
+  }
+}
+createParticles();
+
+// ==================== 倒计时 ====================
+function countdown(seconds, callback) {
+  const area = document.querySelector(`#${currentGame}Screen .game-area`);
+  let remaining = seconds;
+  const el = document.createElement('div');
+  el.className = 'countdown';
+  el.textContent = remaining;
+  area.innerHTML = '';
+  area.appendChild(el);
+  sfxCountdown();
+
+  const iv = addInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearTimer(iv);
+      el.remove();
+      callback();
+    } else {
+      el.textContent = remaining;
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = 'countPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      sfxCountdown();
+    }
+  }, 800);
+}
+
+// ==================== 游戏1：记忆翻牌 ====================
+const EMOJIS = ['🍎','🍋','🍇','🍒','🌟','🎵','🚀','💎'];
+
+function startGame(game) {
+  initAudio();
+  currentGame = game;
+  stopAllTimers();
+  sfxClick();
+
+  if (game === 'memory') startMemory();
+  else if (game === 'math') startMath();
+  else if (game === 'stroop') startStroop();
+  else if (game === 'reaction') startReaction();
+}
+
+function startMemory() {
+  showScreen('memoryScreen');
+  document.getElementById('memMoves').textContent = '0';
+  document.getElementById('memPairs').textContent = '0/8';
+  document.getElementById('memTime').textContent = '0s';
+  const area = document.getElementById('memoryArea');
+
+  // 洗牌
+  const cards = [...EMOJIS, ...EMOJIS].sort(() => Math.random() - 0.5);
+  memState = {
+    cards,
+    flipped: new Array(16).fill(false),
+    matched: new Array(16).fill(false),
+    moves: 0,
+    pairs: 0,
+    firstIdx: -1,
+    locked: false,
+    startTime: Date.now(),
+    timerId: null,
+  };
+
+  // 构建网格
+  const grid = document.getElementById('memoryGrid');
+  grid.innerHTML = '';
+  cards.forEach((emoji, i) => {
+    const card = document.createElement('div');
+    card.className = 'memory-card';
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <div class="face back">?</div>
+      <div class="face front">${emoji}</div>`;
+    card.onclick = () => flipMemoryCard(i);
+    grid.appendChild(card);
+  });
+
+  // 显示3秒预览
+  memState.locked = true;
+  document.querySelectorAll('.memory-card').forEach(c => c.classList.add('flipped'));
+  addTimer(() => {
+    document.querySelectorAll('.memory-card').forEach(c => c.classList.remove('flipped'));
+    memState.locked = false;
+    memState.startTime = Date.now();
+    memState.timerId = addInterval(() => {
+      document.getElementById('memTime').textContent =
+        Math.floor((Date.now() - memState.startTime) / 1000) + 's';
+    }, 500);
+  }, 2500);
+}
+
+let memState = null;
+
+function flipMemoryCard(idx) {
+  if (!memState || memState.locked) return;
+  if (memState.flipped[idx] || memState.matched[idx]) return;
+  sfxClick();
+
+  memState.flipped[idx] = true;
+  const card = document.querySelector(`.memory-card[data-idx="${idx}"]`);
+  card.classList.add('flipped');
+
+  if (memState.firstIdx === -1) {
+    memState.firstIdx = idx;
+  } else {
+    // 第二张牌
+    memState.moves++;
+    document.getElementById('memMoves').textContent = memState.moves;
+    memState.locked = true;
+    const first = memState.firstIdx;
+
+    if (memState.cards[first] === memState.cards[idx]) {
+      // 匹配成功
+      memState.matched[first] = true;
+      memState.matched[idx] = true;
+      memState.pairs++;
+      document.getElementById('memPairs').textContent = `${memState.pairs}/8`;
+      document.querySelector(`.memory-card[data-idx="${first}"]`).classList.add('matched');
+      card.classList.add('matched');
+      memState.firstIdx = -1;
+      memState.locked = false;
+      sfxCorrect();
+
+      if (memState.pairs === 8) {
+        clearTimer(memState.timerId);
+        const elapsed = Math.floor((Date.now() - memState.startTime) / 1000);
+        const score = memState.moves; // 越少越好
+        const isBest = setBest('memory', score);
+        addPlay();
+        updateMenuStats();
+        addTimer(() => {
+          showResult('🃏', '记忆翻牌完成！', `${score} 步`,
+            `用时 ${elapsed} 秒 · 共 8 对`, isBest,
+            startMemory, goMenu);
+        }, 400);
+      }
+    } else {
+      // 不匹配
+      sfxWrong();
+      addTimer(() => {
+        memState.flipped[first] = false;
+        memState.flipped[idx] = false;
+        document.querySelector(`.memory-card[data-idx="${first}"]`).classList.remove('flipped');
+        card.classList.remove('flipped');
+        memState.firstIdx = -1;
+        memState.locked = false;
+      }, 600);
+    }
+  }
+}
+
+// ==================== 游戏2：心算挑战 ====================
+let mathState = null;
+
+function startMath() {
+  showScreen('mathScreen');
+  document.getElementById('mathScore').textContent = '0';
+  document.getElementById('mathCombo').textContent = '0🔥';
+  document.getElementById('mathRound').textContent = '1/20';
+  document.getElementById('mathFeedback').textContent = '';
+  document.getElementById('mathInput').value = '';
+  document.getElementById('mathInput').focus();
+
+  mathState = {
+    score: 0,
+    combo: 0,
+    round: 0,
+    total: 20,
+    timePerQ: 8000, // ms per question, decreases
+    timerId: null,
+    timerStart: 0,
+    timerRunning: false,
+  };
+
+  nextMathQuestion();
+}
+
+function nextMathQuestion() {
+  if (mathState.round >= mathState.total) {
+    endMath();
+    return;
+  }
+  mathState.round++;
+  document.getElementById('mathRound').textContent = `${mathState.round}/${mathState.total}`;
+  document.getElementById('mathFeedback').textContent = '';
+  document.getElementById('mathInput').value = '';
+  document.getElementById('mathInput').focus();
+
+  // 生成题目 (难度随轮次递增)
+  const difficulty = Math.floor(mathState.round / 5);
+  let a, b, op, answer;
+  const ops = ['+', '-', '×'][Math.min(difficulty, 2) > 1 ? 2 : Math.floor(Math.random() * (difficulty > 0 ? 2 : 1) + 1)];
+  // ops: easy rounds only +, medium + -, hard also ×
+  const realOps = mathState.round <= 8 ? ['+'] : mathState.round <= 14 ? ['+', '-'] : ['+', '-', '×'];
+  op = realOps[Math.floor(Math.random() * realOps.length)];
+
+  const maxNum = 10 + difficulty * 8;
+  if (op === '×') {
+    a = Math.floor(Math.random() * Math.min(12 + difficulty, 20)) + 2;
+    b = Math.floor(Math.random() * Math.min(9 + difficulty, 15)) + 2;
+    if (a > 20) a = Math.floor(Math.random() * 15) + 2;
+    answer = a * b;
+  } else if (op === '-') {
+    a = Math.floor(Math.random() * maxNum) + 5;
+    b = Math.floor(Math.random() * a) + 1;
+    answer = a - b;
+  } else {
+    a = Math.floor(Math.random() * maxNum) + 1;
+    b = Math.floor(Math.random() * maxNum) + 1;
+    answer = a + b;
+  }
+
+  mathState.currentAnswer = answer;
+  mathState.timePerQ = Math.max(3000, 8000 - mathState.round * 200);
+
+  document.getElementById('mathProblem').textContent = `${a} ${op} ${b} = ?`;
+
+  // 计时条
+  const fill = document.getElementById('mathTimerFill');
+  fill.style.width = '100%';
+  fill.classList.remove('warning', 'danger');
+  mathState.timerStart = Date.now();
+  mathState.timerRunning = true;
+
+  if (mathState.timerId) clearTimer(mathState.timerId);
+  mathState.timerId = addInterval(() => {
+    const elapsed = Date.now() - mathState.timerStart;
+    const pct = Math.max(0, 100 - (elapsed / mathState.timePerQ) * 100);
+    fill.style.width = pct + '%';
+    if (pct < 30) fill.classList.add('danger');
+    else if (pct < 55) fill.classList.add('warning');
+
+    if (elapsed >= mathState.timePerQ) {
+      // 超时
+      mathState.timerRunning = false;
+      mathState.combo = 0;
+      document.getElementById('mathCombo').textContent = '0🔥';
+      document.getElementById('mathFeedback').innerHTML = '<span style="color:#ff6b6b">⏰ 时间到！</span>';
+      sfxWrong();
+      clearTimer(mathState.timerId);
+      addTimer(nextMathQuestion, 800);
+    }
+  }, 80);
+}
+
+function submitMath() {
+  if (!mathState || !mathState.timerRunning) return;
+  const input = document.getElementById('mathInput');
+  const val = parseInt(input.value);
+  if (isNaN(val)) return;
+
+  const elapsed = Date.now() - mathState.timerStart;
+  clearTimer(mathState.timerId);
+  mathState.timerRunning = false;
+
+  if (val === mathState.currentAnswer) {
+    // 正确
+    const speedBonus = Math.max(0, Math.floor((mathState.timePerQ - elapsed) / 100));
+    const comboBonus = Math.floor(mathState.combo / 3) * 5;
+    const points = 10 + speedBonus + comboBonus;
+    mathState.score += points;
+    mathState.combo++;
+
+    const s = loadStats();
+    if (mathState.combo > (s.maxCombo || 0)) {
+      s.maxCombo = mathState.combo;
+      saveStats(s);
+    }
+
+    document.getElementById('mathScore').textContent = mathState.score;
+    document.getElementById('mathCombo').textContent = `${mathState.combo}🔥`;
+    document.getElementById('mathFeedback').innerHTML =
+      `<span style="color:#4ecca3">✓ 正确！+${points} ${mathState.combo >= 5 ? '🔥' : ''}</span>`;
+    sfxCorrect();
+    if (mathState.combo > 0 && mathState.combo % 5 === 0) sfxCombo();
+
+    // 连击特效
+    if (mathState.combo >= 5) {
+      const area = document.getElementById('mathArea');
+      const pop = document.createElement('div');
+      pop.className = 'combo-pop';
+      pop.textContent = `${mathState.combo}连击!`;
+      pop.style.left = (30 + Math.random() * 40) + '%';
+      pop.style.top = '40%';
+      area.appendChild(pop);
+      addTimer(() => pop.remove(), 800);
+    }
+  } else {
+    mathState.combo = 0;
+    document.getElementById('mathCombo').textContent = '0🔥';
+    document.getElementById('mathFeedback').innerHTML =
+      `<span style="color:#ff6b6b">✗ 答案是 ${mathState.currentAnswer}</span>`;
+    sfxWrong();
+  }
+
+  addTimer(nextMathQuestion, 700);
+}
+
+// 回车提交
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && currentGame === 'math') submitMath();
+});
+
+function endMath() {
+  const isBest = setBest('math', mathState.score);
+  addPlay();
+  updateMenuStats();
+  addTimer(() => {
+    showResult('🔢', '心算挑战完成！', `${mathState.score} 分`,
+      `共 ${mathState.total} 题 · 最高连击 ${loadStats().maxCombo || mathState.combo}`, isBest,
+      startMath, goMenu);
+  }, 300);
+}
+
+// ==================== 游戏3：色词冲突 (Stroop) ====================
+let stroopState = null;
+const STROOP_COLORS = [
+  { name: '红', color: '#e74c3c', cssClass: 'red' },
+  { name: '蓝', color: '#3498db', cssClass: 'blue' },
+  { name: '绿', color: '#2ecc71', cssClass: 'green' },
+  { name: '黄', color: '#f39c12', cssClass: 'yellow' },
+];
+
+function startStroop() {
+  showScreen('stroopScreen');
+  document.getElementById('stroopScore').textContent = '0';
+  document.getElementById('stroopCombo').textContent = '0🔥';
+  document.getElementById('stroopRound').textContent = '1/30';
+
+  stroopState = { score: 0, combo: 0, round: 0, total: 30 };
+  nextStroopRound();
+}
+
+function nextStroopRound() {
+  if (stroopState.round >= stroopState.total) {
+    endStroop();
+    return;
+  }
+  stroopState.round++;
+  document.getElementById('stroopRound').textContent = `${stroopState.round}/${stroopState.total}`;
+
+  // 选择一个文字和一个显示颜色（确保不同，制造冲突）
+  const wordIdx = Math.floor(Math.random() * STROOP_COLORS.length);
+  let colorIdx = Math.floor(Math.random() * STROOP_COLORS.length);
+  // 70% 概率制造冲突 (文字和颜色不同)
+  if (Math.random() < 0.7) {
+    while (colorIdx === wordIdx) {
+      colorIdx = Math.floor(Math.random() * STROOP_COLORS.length);
+    }
+  }
+
+  const wordColor = STROOP_COLORS[wordIdx];
+  const displayColor = STROOP_COLORS[colorIdx];
+
+  stroopState.correctAnswer = displayColor.cssClass; // 玩家应该选择显示的颜色
+
+  const wordEl = document.getElementById('stroopWord');
+  wordEl.textContent = wordColor.name + '色';
+  wordEl.style.color = displayColor.color;
+
+  // 随机排列答案按钮
+  const colorsEl = document.getElementById('stroopColors');
+  const shuffled = [...STROOP_COLORS].sort(() => Math.random() - 0.5);
+  colorsEl.innerHTML = shuffled.map(c =>
+    `<button class="stroop-btn ${c.cssClass}" onclick="answerStroop('${c.cssClass}')">${c.name}色</button>`
+  ).join('');
+}
+
+function answerStroop(answer) {
+  if (!stroopState || stroopState.round > stroopState.total) return;
+
+  if (answer === stroopState.correctAnswer) {
+    stroopState.score += 10;
+    stroopState.combo++;
+    document.getElementById('stroopScore').textContent = stroopState.score;
+    document.getElementById('stroopCombo').textContent = `${stroopState.combo}🔥`;
+    sfxCorrect();
+    if (stroopState.combo > 0 && stroopState.combo % 5 === 0) sfxCombo();
+
+    // 更新最高连击
+    const s = loadStats();
+    if (stroopState.combo > (s.maxCombo || 0)) { s.maxCombo = stroopState.combo; saveStats(s); }
+  } else {
+    stroopState.combo = 0;
+    document.getElementById('stroopCombo').textContent = '0🔥';
+    sfxWrong();
+    // 闪烁正确答案
+    const correctBtn = document.querySelector(`.stroop-btn.${stroopState.correctAnswer}`);
+    if (correctBtn) {
+      correctBtn.style.boxShadow = '0 0 20px rgba(255,255,255,0.6)';
+      addTimer(() => { correctBtn.style.boxShadow = ''; }, 300);
+    }
+  }
+  addTimer(nextStroopRound, 350);
+}
+
+function endStroop() {
+  const isBest = setBest('stroop', stroopState.score);
+  addPlay();
+  updateMenuStats();
+  addTimer(() => {
+    showResult('🌈', '色词冲突完成！', `${stroopState.score} 分`,
+      `共 ${stroopState.total} 题`, isBest,
+      startStroop, goMenu);
+  }, 300);
+}
+
+// ==================== 游戏4：反应点击 ====================
+let reactState = null;
+
+function startReaction() {
+  showScreen('reactionScreen');
+  document.getElementById('reactRound').textContent = '1/5';
+  document.getElementById('reactBest').textContent = '---';
+  document.getElementById('reactAvg').textContent = '---';
+  document.getElementById('reactInstruction').textContent = '看到绿色立即点击！';
+
+  reactState = {
+    round: 0,
+    total: 5,
+    times: [],
+    state: 'idle', // idle | waiting | ready | clicked | too-early
+    waitStart: 0,
+    timerId: null,
+  };
+
+  nextReactRound();
+}
+
+function nextReactRound() {
+  if (reactState.round >= reactState.total) {
+    endReaction();
+    return;
+  }
+  reactState.round++;
+  document.getElementById('reactRound').textContent = `${reactState.round}/${reactState.total}`;
+
+  const zone = document.getElementById('reactZone');
+  zone.className = 'react-zone waiting';
+  zone.textContent = '等待...';
+  reactState.state = 'waiting';
+
+  // 随机延迟 1.5~4 秒
+  const delay = 1500 + Math.random() * 2500;
+  reactState.waitStart = Date.now();
+
+  if (reactState.timerId) clearTimer(reactState.timerId);
+  reactState.timerId = addTimer(() => {
+    if (reactState.state === 'waiting') {
+      reactState.state = 'ready';
+      reactState.waitStart = Date.now();
+      zone.className = 'react-zone ready';
+      zone.textContent = '点！';
+      sfxCountdown();
+    }
+  }, delay);
+}
+
+function clickReaction() {
+  initAudio();
+  if (!reactState) return;
+
+  const zone = document.getElementById('reactZone');
+
+  if (reactState.state === 'waiting') {
+    // 太早了
+    reactState.state = 'too-early';
+    clearTimer(reactState.timerId);
+    zone.className = 'react-zone clicked';
+    zone.textContent = '太早了！';
+    document.getElementById('reactInstruction').textContent = '等绿色出现再点！';
+    sfxWrong();
+    reactState.times.push(null);
+    addTimer(nextReactRound, 1200);
+  } else if (reactState.state === 'ready') {
+    const reactionTime = Date.now() - reactState.waitStart;
+    reactState.state = 'clicked';
+    clearTimer(reactState.timerId);
+    zone.className = 'react-zone clicked';
+    zone.textContent = `${reactionTime} ms`;
+
+    reactState.times.push(reactionTime);
+    const validTimes = reactState.times.filter(t => t !== null);
+    const best = Math.min(...validTimes);
+    const avg = Math.round(validTimes.reduce((a, b) => a + b, 0) / validTimes.length);
+
+    document.getElementById('reactBest').textContent = `${best}ms`;
+    document.getElementById('reactAvg').textContent = `${avg}ms`;
+
+    if (reactionTime < 200) {
+      document.getElementById('reactInstruction').textContent = '⚡ 闪电反应！超快！';
+    } else if (reactionTime < 300) {
+      document.getElementById('reactInstruction').textContent = '👍 很快！继续保持！';
+    } else if (reactionTime < 450) {
+      document.getElementById('reactInstruction').textContent = '还不错，还可以更快！';
+    } else {
+      document.getElementById('reactInstruction').textContent = '放松，集中注意力再试！';
+    }
+
+    sfxCorrect();
+    addTimer(nextReactRound, 1200);
+  }
+}
+
+function endReaction() {
+  const validTimes = reactState.times.filter(t => t !== null);
+  if (validTimes.length === 0) {
+    isBest = false;
+    avg = '--';
+  } else {
+    const avg = Math.round(validTimes.reduce((a, b) => a + b, 0) / validTimes.length);
+    const best = Math.min(...validTimes);
+    const isBest = setBest('reaction', best);
+    addPlay();
+    updateMenuStats();
+    addTimer(() => {
+      showResult('⚡', '反应测试完成！', `${avg}ms`,
+        `最快 ${best}ms · 共 ${reactState.total} 轮`, isBest,
+        startReaction, goMenu);
+    }, 300);
+    return;
+  }
+  // 如果全部太早
+  addPlay();
+  updateMenuStats();
+  addTimer(() => {
+    showResult('⚡', '反应测试完成！', '--',
+      `需要等绿色出现再点哦`, false,
+      startReaction, goMenu);
+  }, 300);
+}
+
+// 点击反应区域
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('reactZone').addEventListener('click', clickReaction);
+  updateMenuStats();
+});
+
+// ==================== 键盘快捷键 ====================
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') goMenu();
+  if (currentGame === 'math' && e.key === 'Enter') submitMath();
+  if (currentGame === 'reaction' && e.key === ' ') {
+    e.preventDefault();
+    clickReaction();
+  }
+});
+</script>
+</body>
+</html>
