@@ -410,7 +410,7 @@
 
 <header>
   <h1>期末复习看板</h1>
-  <p>2026-07-05 · 冲刺决战</p>
+  <p id="headerDate">冲刺决战</p>
 </header>
 
 <!-- 摘要 -->
@@ -841,7 +841,15 @@
   }
 
   // ==================== 日期 & 数据 ====================
-  var TODAY = new Date(2026, 6, 5); // July 5, 2026
+  var TODAY = new Date(); TODAY.setHours(0,0,0,0); // 自动取今天真实日期
+
+  // 动态更新头部日期
+  (function() {
+    var y = TODAY.getFullYear();
+    var m = String(TODAY.getMonth() + 1).padStart(2, '0');
+    var d = String(TODAY.getDate()).padStart(2, '0');
+    document.getElementById('headerDate').textContent = y + '-' + m + '-' + d + ' · 冲刺决战';
+  })();
 
   var exams = [
     { name:'大学外语Ⅱ',   teacher:'钱俊',  date:new Date(2026,6,5,13,30), loc:'S5107', priority:'low',  color:'g', tag:'g' },
