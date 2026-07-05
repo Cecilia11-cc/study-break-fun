@@ -758,8 +758,10 @@
 
 <script>
   // ==================== 卡密验证 ====================
-  var CORRECT_PASSWORD = 'cjl20070716';  // 修改这里来改密码
+  var CORRECT_PASSWORD = 'cjl20070716';
+  var MAX_ATTEMPTS = 2;
   var SESSION_KEY = 'review_board_unlocked';
+  var ATTEMPT_KEY = 'review_board_attempts';
 
   (function() {
     // 已解锁则跳过
@@ -768,28 +770,70 @@
       return;
     }
 
+    // 已被永久锁定
+    if (sessionStorage.getItem(ATTEMPT_KEY) >= MAX_ATTEMPTS) {
+      showLockedOut();
+      return;
+    }
+
     var input = document.getElementById('lockInput');
     input.focus();
+    updateAttemptDisplay();
 
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') verifyPassword();
     });
   })();
 
+  function updateAttemptDisplay() {
+    var used = parseInt(sessionStorage.getItem(ATTEMPT_KEY)) || 0;
+    var left = MAX_ATTEMPTS - used;
+    var hint = document.querySelector('.lock-hint');
+    if (hint) hint.textContent = '🔑 剩余尝试次数：' + left + ' / ' + MAX_ATTEMPTS;
+  }
+
+  function showLockedOut() {
+    var card = document.querySelector('.lock-card');
+    card.innerHTML =
+      '<div class="lock-icon">🚫</div>' +
+      '<h2>已锁定</h2>' +
+      '<div class="lock-sub" style="color:var(--red)">密码错误次数过多，访问被拒绝</div>' +
+      '<p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem;">如需重置，请关闭浏览器标签页后重新打开</p>';
+    document.getElementById('lockInput') && (document.getElementById('lockInput').disabled = true);
+  }
+
   function verifyPassword() {
     var input = document.getElementById('lockInput');
     var errorEl = document.getElementById('lockError');
+    var used = parseInt(sessionStorage.getItem(ATTEMPT_KEY)) || 0;
+
+    // 已达到上限
+    if (used >= MAX_ATTEMPTS) {
+      showLockedOut();
+      return;
+    }
 
     if (input.value === CORRECT_PASSWORD) {
       sessionStorage.setItem(SESSION_KEY, '1');
+      sessionStorage.removeItem(ATTEMPT_KEY);
       document.getElementById('lockOverlay').classList.add('hidden');
       errorEl.textContent = '';
     } else {
-      errorEl.textContent = '密码错误，请重试';
-      input.classList.add('error');
-      input.value = '';
-      input.focus();
-      setTimeout(function() { input.classList.remove('error'); }, 400);
+      used++;
+      sessionStorage.setItem(ATTEMPT_KEY, used);
+      var left = MAX_ATTEMPTS - used;
+
+      if (left <= 0) {
+        errorEl.textContent = '';
+        showLockedOut();
+      } else {
+        errorEl.textContent = '密码错误，还剩 ' + left + ' 次机会';
+        input.classList.add('error');
+        input.value = '';
+        input.focus();
+        setTimeout(function() { input.classList.remove('error'); }, 400);
+        updateAttemptDisplay();
+      }
     }
   }
 
