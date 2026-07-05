@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期末复习看板 · 豆花喵</title>
+<style>
+  :root {
+    --red:    #e53935;
+    --orange: #ef6c00;
+    --yellow: #f9a825;
+    --green:  #2e7d32;
+    --blue:   #1565c0;
+    --bg:     #f5f5f0;
+    --card:   #fff;
+    --text:   #2c2416;
+    --muted:  #8b7e6a;
+    --border: #e8e4dc;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'PingFang SC', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1rem;
+    line-height: 1.65;
+    font-size: 15px;
+  }
+
+  /* ===== 头部 ===== */
+  header {
+    text-align: center;
+    padding: 1rem 0 0.6rem;
+    margin-bottom: 0.6rem;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 800; }
+  header p  { color: var(--muted); font-size: 0.85rem; margin-top: 0.15rem; }
+
+  /* ===== Tab 导航 ===== */
+  .tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 0.35rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabs button {
+    flex: 1;
+    min-width: 56px;
+    border: none;
+    background: transparent;
+    padding: 0.5rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tabs button.active {
+    background: var(--green);
+    color: #fff;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ===== 摘要卡片 ===== */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .summary-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 0.8rem 0.5rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .summary-card .num  { font-size: 1.6rem; font-weight: 800; display: block; line-height: 1.2; }
+  .summary-card .label { font-size: 0.72rem; color: var(--muted); }
+  .summary-card.red .num    { color: var(--red); }
+  .summary-card.orange .num { color: var(--orange); }
+  .summary-card.blue .num   { color: var(--blue); }
+
+  /* ===== 时间条 ===== */
+  .timeline {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .timeline h3 {
+    font-size: 0.88rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .timeline-visual {
+    position: relative;
+    height: 32px;
+    background: #e8e4dc;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+  }
+  .timeline-visual .seg {
+    position: absolute;
+    top: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700; color: #fff;
+  }
+  .seg.seg-red    { background: var(--red); }
+  .seg.seg-orange { background: var(--orange); }
+  .seg.seg-yellow { background: #e6a817; }
+  .seg.seg-green  { background: var(--green); }
+
+  .timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+
+  /* ===== 时间块 ===== */
+  .day-block {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.55rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    border-left: 4px solid var(--border);
+  }
+  .day-block.d0 { border-left-color: var(--red); }
+  .day-block.d1 { border-left-color: var(--red); }
+  .day-block.d2 { border-left-color: var(--orange); }
+  .day-block.d3 { border-left-color: var(--orange); }
+  .day-block.d4 { border-left-color: var(--yellow); }
+  .day-block.d5 { border-left-color: var(--green); }
+
+  .day-block .day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+  }
+  .day-block .day-title { font-weight: 700; font-size: 0.9rem; }
+  .day-block .day-tag {
+    font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.55rem;
+    border-radius: 8px; color: #fff;
+  }
+  .day-tag.r { background: var(--red); }
+  .day-tag.o { background: var(--orange); }
+  .day-tag.y { background: #e6a817; }
+  .day-tag.g { background: var(--green); }
+
+  .day-block .task { font-size: 0.8rem; padding: 0.2rem 0 0.2rem 1rem; position: relative; }
+  .day-block .task::before {
+    content: ''; position: absolute; left: 0; top: 0.52rem;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--orange);
+  }
+  .day-block .exam-note {
+    margin-top: 0.4rem; padding: 0.4rem 0.55rem; background: #fff8e1;
+    border-radius: 8px; font-size: 0.76rem; font-weight: 600; color: var(--orange);
+  }
+
+  /* ===== 科目考点卡片 ===== */
+  .subject-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .subject-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .subject-card .exam-info {
+    font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem;
+  }
+  .subject-card .section { margin-bottom: 0.6rem; }
+  .subject-card .section h4 {
+    font-size: 0.84rem; color: var(--blue); margin-bottom: 0.25rem;
+  }
+  .subject-card .section p, .subject-card .section li {
+    font-size: 0.8rem; margin-bottom: 0.15rem;
+  }
+  .subject-card .section ul { padding-left: 1.2rem; }
+
+  /* ===== 资源链接 ===== */
+  .resource-links {
+    background: #f8fafd;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    margin-top: 0.5rem;
+  }
+  .resource-links .res-type {
+    font-size: 0.7rem; font-weight: 700; color: var(--muted);
+    margin-bottom: 0.3rem; margin-top: 0.35rem;
+  }
+  .resource-links .res-type:first-child { margin-top: 0; }
+  .resource-links a {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--blue);
+    text-decoration: none;
+    padding: 0.2rem 0;
+    border-bottom: 1px dotted rgba(0,0,0,0.06);
+    word-break: break-all;
+  }
+  .resource-links a:last-child { border-bottom: none; }
+
+  /* ===== 展开/收起 ===== */
+  .toggle-btn {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--blue);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0.2rem 0;
+    margin-top: 0.2rem;
+  }
+  .collapsed-content { display: none; }
+  .collapsed-content.open { display: block; }
+
+  /* ===== 页脚 ===== */
+  footer {
+    text-align: center; padding: 1.5rem 0 1rem;
+    color: var(--muted); font-size: 0.75rem;
+  }
+
+  /* ===== 考试信息卡片 ===== */
+  .exam-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1rem; }
+  @media (max-width: 500px) { .exam-cards { grid-template-columns: 1fr; } }
+  .exam-card {
+    background: var(--card); border-radius: 14px; padding: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07); position: relative; overflow: hidden;
+    border-top: 4px solid var(--border);
+    transition: transform 0.2s;
+  }
+  .exam-card:hover { transform: translateY(-2px); }
+  .exam-card.r { border-top-color: var(--red); }
+  .exam-card.o { border-top-color: var(--orange); }
+  .exam-card.y { border-top-color: #e6a817; }
+  .exam-card.g { border-top-color: var(--green); }
+  .exam-card .ec-subject { font-size: 1rem; font-weight: 800; margin-bottom: 0.2rem; }
+  .exam-card .ec-date {
+    font-size: 1.2rem; font-weight: 900; margin-bottom: 0.3rem;
+  }
+  .exam-card.r .ec-date { color: var(--red); }
+  .exam-card.o .ec-date { color: var(--orange); }
+  .exam-card .ec-meta {
+    font-size: 0.75rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem;
+  }
+  .exam-card .ec-meta span { display: flex; align-items: center; gap: 0.2rem; }
+  .exam-card .ec-badge {
+    position: absolute; top: 0.6rem; right: 0.7rem;
+    font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem;
+    border-radius: 8px; color: #fff;
+  }
+  .ec-badge.r { background: var(--red); }
+  .ec-badge.o { background: var(--orange); }
+  .ec-badge.y { background: #e6a817; }
+  .ec-badge.g { background: var(--green); }
+  .exam-card .ec-countdown {
+    margin-top: 0.5rem; font-size: 0.78rem; font-weight: 700; color: var(--red);
+  }
+
+  /* ===== 饮食 & 作息卡片 ===== */
+  .life-section { margin-bottom: 0.8rem; }
+  .life-section h3 {
+    font-size: 0.95rem; margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.35rem;
+  }
+  .meal-card {
+    background: var(--card); border-radius: 12px; padding: 0.75rem 0.9rem;
+    margin-bottom: 0.45rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    border-left: 3px solid var(--border);
+  }
+  .meal-card.breakfast { border-left-color: var(--yellow); }
+  .meal-card.lunch     { border-left-color: var(--orange); }
+  .meal-card.dinner    { border-left-color: var(--blue); }
+  .meal-card.snack     { border-left-color: var(--green); }
+  .meal-time {
+    font-size: 0.8rem; font-weight: 800; min-width: 3rem;
+    padding-top: 0.1rem;
+  }
+  .meal-content { font-size: 0.78rem; flex: 1; }
+  .meal-content .meal-title { font-weight: 700; margin-bottom: 0.15rem; }
+  .meal-content .meal-detail { color: var(--muted); font-size: 0.73rem; }
+  .meal-content .meal-list { margin-top: 0.3rem; font-size: 0.73rem; }
+  .meal-content .meal-list li { margin-bottom: 0.12rem; padding-left: 0.3rem; }
+  .meal-tag {
+    display: inline-block; font-size: 0.65rem; padding: 0.1rem 0.4rem;
+    border-radius: 6px; margin-right: 0.25rem; font-weight: 600;
+  }
+  .meal-tag.good { background: #e8f5e9; color: #2e7d32; }
+  .meal-tag.avoid { background: #ffebee; color: #c62828; }
+  .meal-tag.brain { background: #e3f2fd; color: #1565c0; }
+
+  .food-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;
+    margin-top: 0.4rem;
+  }
+  @media (max-width: 500px) { .food-grid { grid-template-columns: 1fr; } }
+  .food-item {
+    background: #fafaf7; border-radius: 8px; padding: 0.5rem 0.6rem;
+    font-size: 0.73rem; border: 1px solid #eee;
+  }
+  .food-item .food-name { font-weight: 700; font-size: 0.8rem; }
+  .food-item .food-why { color: var(--muted); font-size: 0.7rem; margin-top: 0.1rem; }
+  .food-item .food-how { color: var(--blue); font-size: 0.68rem; }
+
+  .sleep-row {
+    background: var(--card); border-radius: 12px; padding: 0.75rem 0.9rem;
+    margin-bottom: 0.45rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    display: flex; align-items: center; gap: 0.8rem;
+    border-left: 3px solid #7e57c2;
+    font-size: 0.8rem;
+  }
+  .sleep-row .sleep-icon { font-size: 1.4rem; }
+  .sleep-row .sleep-time { font-weight: 800; font-size: 0.95rem; color: #7e57c2; }
+  .sleep-row .sleep-note { color: var(--muted); font-size: 0.73rem; }
+
+  .exam-tips {
+    background: #fff8e1; border-radius: 12px; padding: 0.8rem 0.9rem;
+    margin-top: 0.6rem; font-size: 0.76rem; line-height: 1.7;
+  }
+  .exam-tips h4 { font-size: 0.85rem; margin-bottom: 0.4rem; }
+
+  @media (min-width: 750px) {
+    body { max-width: 750px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>期末复习看板</h1>
+  <p>2026-07-05 · 冲刺决战</p>
+</header>
+
+<!-- 摘要 -->
+<div class="summary">
+  <div class="summary-card red">
+    <span class="num" id="criticalCount">-</span>
+    <span class="label">重点攻坚</span>
+  </div>
+  <div class="summary-card orange">
+    <span class="num" id="daysLeft">-</span>
+    <span class="label">天考完</span>
+  </div>
+  <div class="summary-card blue">
+    <span class="num" id="todayFocus">-</span>
+    <span class="label">今日主攻</span>
+  </div>
+</div>
+
+<!-- Tab 导航 -->
+<div class="tabs">
+  <button class="active" data-tab="tab-plan">时间规划</button>
+  <button data-tab="tab-math">高数</button>
+  <button data-tab="tab-micro">微观经济学</button>
+  <button data-tab="tab-mgmt">管理学</button>
+  <button data-tab="tab-digi">数字贸易</button>
+  <button data-tab="tab-eng">英语</button>
+  <button data-tab="tab-life">🍱 考试&生活</button>
+</div>
+
+<!-- ========== Tab 1: 时间规划 ========== -->
+<div class="tab-content active" id="tab-plan">
+
+  <!-- 时间轴可视化 -->
+  <div class="timeline">
+    <h3>考试时间线</h3>
+    <div class="timeline-visual" id="timelineVis"></div>
+    <div class="timeline-labels" id="timelineLabels"></div>
+  </div>
+
+  <!-- 每日安排 -->
+  <div id="dayPlan"></div>
+
+</div>
+
+<!-- ========== Tab 2: 高数 ========== -->
+<div class="tab-content" id="tab-math">
+  <div class="subject-card">
+    <h3>高等数学CⅡ</h3>
+    <p class="exam-info">7/6 08:30-10:30 · 2303 · 屈力进 · 还剩 <strong style="color:var(--red)">4 天</strong></p>
+
+    <div class="section">
+      <h4>一、定积分（计算+应用，必考大题）</h4>
+      <ul>
+        <li>牛顿-莱布尼茨公式：先求原函数，再代入上下限</li>
+        <li>换元积分法 —— <strong>换元必换限！</strong></li>
+        <li>分部积分：∫udv = uv − ∫vdu</li>
+        <li>变上限积分求导：d/dx ∫<sub>a</sub><sup>φ(x)</sup> f(t)dt = f[φ(x)]·φ'(x)</li>
+        <li>应用：旋转体体积 V = π∫[f(x)]²dx、平面面积</li>
+        <li>反常积分：无穷限/瑕积分，先求积分后取极限</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>二、微分方程（一阶+二阶，计算题核心）</h4>
+      <ul>
+        <li>可分离变量：dy/dx = g(x)h(y) → 分离积分</li>
+        <li>一阶线性：y' + P(x)y = Q(x)，通解公式必须背</li>
+        <li>二阶常系数齐次：特征方程 r²+pr+q=0，三种根对应三种通解</li>
+        <li>二阶非齐次：通解 = 齐次通解 + 特解（待定系数法）</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>三、无穷级数（判敛+展开，区分度高）</h4>
+      <ul>
+        <li>几何级数 ∑qⁿ（|q|&lt;1 收敛）、p-级数 ∑1/nᵖ（p&gt;1 收敛）</li>
+        <li>正项级数：比值判别法（达朗贝尔）、比较判别法</li>
+        <li>交错级数：莱布尼茨判别法</li>
+        <li>幂级数收敛半径 R = lim|aₙ/aₙ₊₁|，端点单独判</li>
+        <li>麦克劳林展开：eˣ, sinx, cosx, ln(1+x), (1+x)ᵅ 必须背</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>复习策略</h4>
+      <p>数学靠刷题，不能只看不写。每天至少 2h 动手算。错题反复过。先做近 2-3 年真题了解命题风格。</p>
+    </div>
+
+    <div class="resource-links">
+      <div class="res-type">B站视频</div>
+      <a href="https://www.bilibili.com/video/BV1YFC6Y7E1A/" target="_blank" rel="noopener">【蜂考】高数 3小时突击 — 定积分+微分方程全覆盖</a>
+      <a href="https://www.bilibili.com/video/BV1KfMCz3E96/" target="_blank" rel="noopener">【李天意】高数下 6小时 — 级数+微分方程精讲</a>
+      <a href="https://www.bilibili.com/video/BV1Go4y1275m/" target="_blank" rel="noopener">高数C(下) 期末复习 — 知识点梳理+习题</a>
+      <a href="https://www.bilibili.com/video/BV1weTEztEQy/" target="_blank" rel="noopener">高数II 期末通关 — 定积分+级数专项</a>
+
+      <div class="res-type">知乎经验</div>
+      <a href="https://zhuanlan.zhihu.com/p/637732885" target="_blank" rel="noopener">高数摆烂一学期，一周急救80+ 经验帖</a>
+
+      <div class="res-type">公众号</div>
+      <a href="#" target="_blank" rel="noopener">slandarer随笔 — MATLAB数学可视化参考</a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Tab 3: 微观经济学 ========== -->
+<div class="tab-content" id="tab-micro">
+  <div class="subject-card">
+    <h3>微观经济学A</h3>
+    <p class="exam-info">7/10 08:30-10:30 · 2301 · 刘迪 · 还剩 <strong style="color:var(--orange)">8 天</strong></p>
+
+    <div class="section">
+      <h4>一、供需与弹性（20-25%，最高频考点）</h4>
+      <ul>
+        <li>需求价格弹性 E<sub>d</sub> = (ΔQ/Q) / (ΔP/P)</li>
+        <li>E<sub>d</sub>&gt;1 富有弹性 → <strong>薄利多销</strong>（降价增收）</li>
+        <li>E<sub>d</sub>&lt;1 缺乏弹性 → <strong>谷贱伤农</strong>（丰收减收）</li>
+        <li>收入弹性 &gt;0 正常品，&lt;0 低档品</li>
+        <li>交叉弹性 &gt;0 替代品，&lt;0 互补品</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>二、边际分析（贯穿全课程的方法论）</h4>
+      <ul>
+        <li>消费者均衡：MU₁/P₁ = MU₂/P₂ = λ</li>
+        <li>生产者均衡：MP<sub>L</sub>/w = MP<sub>K</sub>/r</li>
+        <li>利润最大化：<strong>MR = MC</strong>（全市场通用）</li>
+        <li>MC 过 AC 最低点（收支相抵点），MC 过 AVC 最低点（停止营业点）</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>三、四种市场结构（论述题最爱）</h4>
+      <table style="width:100%;font-size:0.75rem;border-collapse:collapse;margin-top:0.3rem;">
+        <tr style="background:#f0ede5;"><th style="padding:0.3rem;">市场</th><th>厂商</th><th>产品</th><th>长期利润</th><th>效率</th></tr>
+        <tr><td style="padding:0.3rem;">完全竞争</td><td>极多</td><td>同质</td><td>0</td><td>最高</td></tr>
+        <tr><td style="padding:0.3rem;">垄断竞争</td><td>较多</td><td>有差异</td><td>0</td><td>有剩余产能</td></tr>
+        <tr><td style="padding:0.3rem;">寡头</td><td>少数</td><td>-</td><td>&gt;0</td><td>较低</td></tr>
+        <tr><td style="padding:0.3rem;">完全垄断</td><td>1个</td><td>无替代</td><td>超额利润</td><td>最低(无谓损失)</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h4>四、其他高频</h4>
+      <ul>
+        <li>市场失灵：垄断、外部性、公共物品、信息不对称</li>
+        <li>帕累托最优：MRS<sub>A</sub>=MRS<sub>B</sub>（交换），MRTS<sub>L</sub>=MRTS<sub>K</sub>（生产）</li>
+        <li>吉芬商品：收入效应 &gt; 替代效应</li>
+        <li>价格歧视三级公式</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>复习策略</h4>
+      <p>画图是核心 —— 供需均衡图、成本曲线族、四种市场均衡图必须手到擒来。每天画一遍核心图表。</p>
+    </div>
+
+    <div class="resource-links">
+      <div class="res-type">B站视频</div>
+      <a href="https://www.bilibili.com/cheese/play/ss373197964" target="_blank" rel="noopener">【绩满满】微观经济学 3小时速成 — 供需弹性+市场结构全覆盖</a>
+      <a href="https://www.bilibili.com/cheese/play/ep395939" target="_blank" rel="noopener">微观经济学 4小时突击不挂科 — 附讲义</a>
+      <a href="https://www.bilibili.com/opus/827761582326939651" target="_blank" rel="noopener">10分钟速成课：经济学 — 微观经济</a>
+
+      <div class="res-type">知乎</div>
+      <a href="https://www.zhihu.com/question/504929478" target="_blank" rel="noopener">如何复习微观经济学期末不挂科？— 含网盘资料（提取码 8ys3）</a>
+
+      <div class="res-type">学习网站</div>
+      <a href="https://higher.smartedu.cn/course/6260b1dbf29a9e60d0f265de" target="_blank" rel="noopener">国家高等教育智慧教育平台 — 微观经济学课程</a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Tab 4: 管理学 ========== -->
+<div class="tab-content" id="tab-mgmt">
+  <div class="subject-card">
+    <h3>管理学</h3>
+    <p class="exam-info">7/9 08:30-10:30 · 2314 · 陈凡 · 还剩 <strong style="color:var(--orange)">7 天</strong></p>
+
+    <div class="section">
+      <h4>四大人物对比（必考）</h4>
+      <table style="width:100%;font-size:0.73rem;border-collapse:collapse;margin-top:0.3rem;">
+        <tr style="background:#f0ede5;">
+          <th style="padding:0.25rem;">人物</th><th>称号</th><th>国别</th><th>核心关键词</th><th>代表作</th>
+        </tr>
+        <tr>
+          <td style="padding:0.25rem;"><strong>泰勒</strong></td><td>科学管理之父</td><td>美国</td>
+          <td>效率、标准化、例外原则、差别计件工资</td><td>《科学管理原理》1911</td>
+        </tr>
+        <tr>
+          <td style="padding:0.25rem;"><strong>法约尔</strong></td><td>管理过程之父</td><td>法国</td>
+          <td>5职能+14原则、统一指挥、法约尔跳板</td><td>《工业管理与一般管理》1916</td>
+        </tr>
+        <tr>
+          <td style="padding:0.25rem;"><strong>韦伯</strong></td><td>组织理论之父</td><td>德国</td>
+          <td>科层制、合理-合法权力、非人格化</td><td>《社会组织与经济组织》</td>
+        </tr>
+        <tr>
+          <td style="padding:0.25rem;"><strong>梅奥</strong></td><td>行为科学先驱</td><td>美国</td>
+          <td>霍桑实验、社会人、非正式组织</td><td>《工业文明中人的问题》</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h4>易错辨析</h4>
+      <ul>
+        <li>例外原则 → <strong>泰勒</strong>，不是法约尔！</li>
+        <li>统一指挥 → <strong>法约尔</strong>十四条</li>
+        <li>合理-合法权力 → <strong>韦伯</strong>认为效率最高</li>
+        <li>社会人假设 → <strong>梅奥</strong>，对比泰勒/斯密的经济人假设</li>
+        <li>法约尔是<strong>第一个</strong>系统划分管理职能的人</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>复习策略</h4>
+      <p>记忆量大，每天背一章核心理论。四大人物必须能默写对照表。配合案例分析加深理解。</p>
+    </div>
+
+    <div class="resource-links">
+      <div class="res-type">B站视频</div>
+      <a href="https://www.bilibili.com/cheese/play/ss143886720" target="_blank" rel="noopener">《管理学原理》2小时速成 — 泰勒/法约尔/霍桑实验专项</a>
+      <a href="https://www.bilibili.com/video/BV1jM41157sC/" target="_blank" rel="noopener">【北师大】管理学 王文周 — 霍桑实验独立讲解（7分46秒）</a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Tab 5: 数字贸易 ========== -->
+<div class="tab-content" id="tab-digi">
+  <div class="subject-card">
+    <h3>数字贸易</h3>
+    <p class="exam-info">7/8 08:30-10:30 · 2311 · 张天 · 还剩 <strong style="color:var(--orange)">6 天</strong></p>
+
+    <div class="section">
+      <h4>核心概念辨析</h4>
+      <ul>
+        <li><strong>宽口径</strong>（中国采用）：数字订购贸易 + 数字交付贸易</li>
+        <li>数字贸易 ≠ 跨境电商（跨境电商只是数字订购贸易的子集）</li>
+        <li>核心特征：以<strong>数据为关键生产要素</strong></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>统计框架三大维度</h4>
+      <ul>
+        <li><strong>HOW</strong>（性质）：数字订购 / 数字交付 / 数字中介平台(DIP)</li>
+        <li><strong>WHAT</strong>（产品）：商品 + 服务</li>
+        <li><strong>WHO</strong>（参与者）：企业、消费者、政府</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>跨境电商清关代码（高频）</h4>
+      <ul>
+        <li><strong>9610</strong>：跨境电商综合保税区模式</li>
+        <li><strong>1210</strong>：保税备货模式（先入仓，下单后清关）</li>
+        <li><strong>9710</strong>：跨境电商 B2B 直接出口</li>
+        <li><strong>9810</strong>：跨境电商出口海外仓</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>高频关键词</h4>
+      <p style="font-size:0.78rem;">RCEP · CPTPP · DEPA · 单一窗口 · 数据本地化 · 数字鸿沟 · 区块链 · 平台经济 · 交易成本理论 · 价值链理论</p>
+    </div>
+
+    <div class="section">
+      <h4>复习策略</h4>
+      <p>概念+框架为主。用思维导图梳理章节脉络，重点背名词解释和清关代码。关注数字贸易与传统贸易的区别表。</p>
+    </div>
+
+    <div class="resource-links">
+      <div class="res-type">题库</div>
+      <a href="https://www.renrendoc.com/paper/522143898.html" target="_blank" rel="noopener">2026年数字贸易跨境电商服务贸易题库</a>
+      <a href="https://www.renrendoc.com/paper/492438657.html" target="_blank" rel="noopener">2025年数字贸易概论考试题库及答案</a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Tab 6: 英语 ========== -->
+<div class="tab-content" id="tab-eng">
+  <div class="subject-card">
+    <h3>大学外语Ⅱ</h3>
+    <p class="exam-info">7/5 13:30-15:00 · S5107 · 钱俊 · 还剩 <strong style="color:var(--red)">3 天</strong></p>
+
+    <div class="section">
+      <h4>复习重点</h4>
+      <ul>
+        <li>考前做 2 套真题保持手感</li>
+        <li>重点复习翻译和写作模板</li>
+        <li>每天 30-40 分钟足够</li>
+        <li>不要再花大量时间背单词——性价比低</li>
+        <li>作文模板：三段式结构 + 常用连接词提前准备好</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h4>时间分配建议</h4>
+      <p>英语底子好 = 你的优势。把时间砸给数学和微观，英语保持手感即可。考前一天过一遍作文模板，考前 30 分钟翻翻错题。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Tab 7: 考试 & 生活 ========== -->
+<div class="tab-content" id="tab-life">
+
+  <!-- 考试信息卡片 -->
+  <div class="life-section">
+    <h3>📋 考试时间地点</h3>
+    <div class="exam-cards" id="examCards"></div>
+  </div>
+
+  <!-- 饮食安排 -->
+  <div class="life-section">
+    <h3>🥗 考前饮食建议</h3>
+    <div id="mealPlan"></div>
+    <div class="exam-tips">
+      <h4>⚠️ 考试当天饮食原则</h4>
+      <p>
+        <strong>早餐：</strong>必须吃！蛋白质+碳水（鸡蛋+全麦面包+牛奶），不要只吃甜的。<br>
+        <strong>考前 1h：</strong>一小块黑巧克力或香蕉，稳定血糖。<br>
+        <strong>考场带水：</strong>温水，小口喝。别喝冰的。<br>
+        <strong>避免：</strong>油炸、过辣、过甜、碳酸饮料——容易犯困或胃不适。<br>
+        <strong>咖啡：</strong>平时不喝的话考前别尝试，心跳加速反而影响发挥。
+      </p>
+    </div>
+  </div>
+
+  <!-- 作息安排 -->
+  <div class="life-section">
+    <h3>😴 作息安排</h3>
+    <div id="sleepSchedule"></div>
+    <div class="exam-tips">
+      <h4>💤 考前睡眠建议</h4>
+      <p>
+        <strong>考前夜：</strong>22:30 前放下手机，23:00 前入睡。睡前 1h 不刷视频。<br>
+        <strong>考试当天：</strong>提前 30min 到考场，路上听轻松音乐不看书。<br>
+        <strong>午休：</strong>考完如果有下一场，午休 20-30min 不要超过 40min。<br>
+        <strong>睡不着怎么办：</strong>闭眼躺平也是休息。不要越躺越焦虑看手机。<br>
+        <strong>生物钟：</strong>考前 3 天开始调整作息，和考试时间对齐。
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<footer>豆花喵 · 静心复习，温柔生长</footer>
+
+<script>
+  var TODAY = new Date(2026, 6, 5); // July 5, 2026
+
+  var exams = [
+    { name:'大学外语Ⅱ',   teacher:'钱俊',  date:new Date(2026,6,5,13,30), loc:'S5107', priority:'low',  color:'g', tag:'g' },
+    { name:'高等数学CⅡ',  teacher:'屈力进', date:new Date(2026,6,6,8,30),  loc:'2303',  priority:'high', color:'r', tag:'r' },
+    { name:'数字贸易',     teacher:'张天',  date:new Date(2026,6,8,8,30),  loc:'2311',  priority:'med',  color:'o', tag:'o' },
+    { name:'管理学',       teacher:'陈凡',  date:new Date(2026,6,9,8,30),  loc:'2314',  priority:'med',  color:'o', tag:'o' },
+    { name:'微观经济学A',  teacher:'刘迪',  date:new Date(2026,6,10,8,30), loc:'2301',  priority:'high', color:'r', tag:'r' }
+  ];
+
+  function daysUntil(d) {
+    return Math.ceil((d - TODAY) / (1000*60*60*24));
+  }
+
+  function fmtDate(d) {
+    return (d.getMonth()+1) + '/' + d.getDate() + ' '
+      + (d.getHours()<10?'0':'') + d.getHours() + ':'
+      + (d.getMinutes()<10?'0':'') + d.getMinutes();
+  }
+
+  // --- 摘要 ---
+  var critical = exams.filter(function(e){ return e.priority==='high'; }).length;
+  var maxDay = Math.max.apply(null, exams.map(function(e){ return daysUntil(e.date); }));
+  var todayExam = exams.find(function(e){ return daysUntil(e.date) <= 1; });
+  document.getElementById('criticalCount').textContent = critical + ' 门';
+  document.getElementById('daysLeft').textContent = maxDay;
+  document.getElementById('todayFocus').textContent = '高数+微观';
+
+  // --- 时间轴可视化 ---
+  var totalSpan = maxDay;
+  var vis = document.getElementById('timelineVis');
+  var labels = document.getElementById('timelineLabels');
+  var colors = ['#e53935','#ef6c00','#e6a817','#2e7d32'];
+  var sorted = exams.slice().sort(function(a,b){ return a.date - b.date; });
+  var prevDay = 0;
+  sorted.forEach(function(e, i) {
+    var d = daysUntil(e.date);
+    var pct = ((d) / totalSpan) * 100;
+    // small block for exam day
+    var segPct = Math.max(pct - prevDay, 3);
+    vis.innerHTML += '<div class="seg seg-' + e.color + '" style="left:' + prevDay + '%;width:' + segPct + '%;">' + e.name + '</div>';
+    prevDay = pct;
+  });
+  // fill remaining
+  if (prevDay < 100) {
+    vis.innerHTML += '<div class="seg seg-green" style="left:' + prevDay + '%;width:' + (100-prevDay) + '%;">结束</div>';
+  }
+  labels.innerHTML = '<span>今天 7/2</span><span>7/5 英语</span><span>7/6 高数</span><span>7/8 数字贸易</span><span>7/9 管理</span><span>7/10 微观</span>';
+
+  // --- 每日安排 ---
+  var plan = [
+    {
+      label:'7/2（今天·周三）', tag:'r', tagText:'冲刺', cls:'d0',
+      tasks: [
+        '高数：定积分计算专项练习 2h — 换元+分部+变上限求导',
+        '微观：画供需曲线图 · 做弹性计算 1.5h',
+        '管理：背泰勒+法约尔理论框架 1h',
+        '英语：30min 阅读保持手感（不占大块时间）'
+      ]
+    },
+    {
+      label:'7/3（周四）', tag:'r', tagText:'关键日', cls:'d1',
+      tasks: [
+        '高数：微分方程专项 — 一阶线性+二阶常系数 2h',
+        '高数：级数判敛练习 1h',
+        '微观：边际分析+成本曲线 1.5h',
+        '数字贸易：梳理第1-3章思维导图 1h'
+      ],
+      note: '⚡ 高数只剩 3 天，今天必须把微分方程攻下来'
+    },
+    {
+      label:'7/4（周五）', tag:'o', tagText:'高数冲刺', cls:'d2',
+      tasks: [
+        '高数：综合模拟卷 ×1 + 错题回顾 2.5h',
+        '高数：公式默写（麦克劳林展开、通解公式）30min',
+        '英语：写作模板过一遍 30min',
+        '数字贸易：名词解释集中背诵 1h'
+      ],
+      note: '⚡ 明天下午考英语，明天上午最后过一遍作文模板即可'
+    },
+    {
+      label:'7/5（周六）', tag:'r', tagText:'英语+高数', cls:'d3',
+      tasks: [
+        '上午：英语作文模板最后过一遍 · 翻错题',
+        '下午 13:30-15:00 考大学外语Ⅱ',
+        '考完后休息 30min → 高数错题+公式最终回顾 2h',
+        '晚上：管理学第1-2章回顾 1.5h'
+      ],
+      note: '📝 英语考试！考完立刻切回高数模式，明天上午就是高数'
+    },
+    {
+      label:'7/6（周日）', tag:'r', tagText:'高数决战', cls:'d3',
+      tasks: [
+        '上午 08:30-10:30 考高等数学CⅡ',
+        '考完后彻底放松 2h',
+        '下午：微观经济学图表专项 — 四市场均衡图全画一遍 2h',
+        '晚上：管理学第3-4章 1.5h'
+      ],
+      note: '📝 高数决战！考前只看错题和公式，不要做新题'
+    },
+    {
+      label:'7/7（周一）', tag:'o', tagText:'缓冲日', cls:'d4',
+      tasks: [
+        '数字贸易：第二轮框架复习+真题 1.5h',
+        '管理学：背第5-6章+案例分析 1.5h',
+        '微观：计算题专项+往年真题 2h'
+      ],
+      note: '明天考数字贸易，今天主攻数字贸易框架+管理背诵'
+    },
+    {
+      label:'7/8（周二）', tag:'o', tagText:'双线作战', cls:'d4',
+      tasks: [
+        '上午 08:30-10:30 考数字贸易',
+        '考完后：微观计算题最后冲刺 2h',
+        '晚上：管理学全本速览回顾 1.5h'
+      ],
+      note: '📝 数字贸易考完！管理就在明天，微观只剩 2 天'
+    },
+    {
+      label:'7/9（周三）', tag:'y', tagText:'管理学', cls:'d5',
+      tasks: [
+        '上午 08:30-10:30 考管理学',
+        '考完后：微观全本公式图表最终复习 3h',
+        '微观 4 种市场结构论述题准备'
+      ],
+      note: '📝 管理学考完！最后冲刺微观——只剩 1 天'
+    },
+    {
+      label:'7/10（周四）', tag:'g', tagText:'最后一战', cls:'d5',
+      tasks: [
+        '上午 08:30-10:30 考微观经济学A',
+        '🎉 全部考完！'
+      ],
+      note: '📝 最后一门！考前重点看供需弹性+市场结构+边际分析'
+    }
+  ];
+
+  var dayPlan = document.getElementById('dayPlan');
+  plan.forEach(function(d) {
+    var html = '<div class="day-block ' + d.cls + '">';
+    html += '<div class="day-header"><span class="day-title">' + d.label + '</span><span class="day-tag ' + d.tag + '">' + d.tagText + '</span></div>';
+    d.tasks.forEach(function(t) {
+      html += '<div class="task">' + t + '</div>';
+    });
+    if (d.note) html += '<div class="exam-note">' + d.note + '</div>';
+    html += '</div>';
+    dayPlan.innerHTML += html;
+  });
+
+  // --- Tab 切换 ---
+  var tabs = document.querySelectorAll('.tabs button');
+  var contents = document.querySelectorAll('.tab-content');
+  tabs.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      tabs.forEach(function(b){ b.classList.remove('active'); });
+      contents.forEach(function(c){ c.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // --- 考试信息卡片 ---
+  var examIcons = { '大学外语Ⅱ':'📖', '高等数学CⅡ':'📐', '数字贸易':'💻', '管理学':'📋', '微观经济学A':'📊' };
+  var examCards = document.getElementById('examCards');
+  var sortedExams = exams.slice().sort(function(a,b){ return a.date - b.date; });
+  sortedExams.forEach(function(e) {
+    var d = daysUntil(e.date);
+    var countdownText = '';
+    if (d < 0) { countdownText = '✅ 已考完'; }
+    else if (d === 0) { countdownText = '⚠️ <strong>今天考试！</strong>'; }
+    else if (d === 1) { countdownText = '🔥 明天考试！'; }
+    else { countdownText = '还有 <strong>' + d + ' 天</strong>'; }
+
+    examCards.innerHTML +=
+      '<div class="exam-card ' + e.color + '">' +
+        '<div class="ec-badge ' + e.color + '">' + (examIcons[e.name]||'📝') + ' ' + e.name + '</div>' +
+        '<div class="ec-subject">' + e.name + ' · ' + e.teacher + '</div>' +
+        '<div class="ec-date">' + fmtDate(e.date) + '</div>' +
+        '<div class="ec-meta">' +
+          '<span>📍 <strong>' + e.loc + '</strong></span>' +
+          '<span>👨‍🏫 ' + e.teacher + '</span>' +
+          '<span>⏰ ' + (e.date.getHours()<10?'0':'')+e.date.getHours()+':'+(e.date.getMinutes()<10?'0':'')+e.date.getMinutes() + '</span>' +
+        '</div>' +
+        '<div class="ec-countdown">' + countdownText + '</div>' +
+      '</div>';
+  });
+
+  // --- 饮食安排 ---
+  var meals = [
+    {
+      type:'breakfast', time:'07:30', title:'🥣 早餐 — 启动大脑',
+      detail:'蛋白质 + 慢碳水 + 优质脂肪。早餐必须吃！血糖是大脑的直接燃料。',
+      list: [
+        '<b>首选：</b>燕麦牛奶粥（加几颗蓝莓/香蕉片）+ 水煮蛋 ×1 + 核桃 ×3',
+        '<b>备选：</b>全麦三明治（鸡蛋+生菜+番茄）+ 温豆浆 + 腰果 ×5',
+        '<b>快捷：</b>希腊酸奶 + 格兰诺拉麦片 + 蜂蜜 + 一个苹果',
+        '<b>喝：</b>温白开/淡蜂蜜水。❌ 冰饮——刺激肠胃影响上午状态'
+      ]
+    },
+    {
+      type:'lunch', time:'12:00', title:'🍚 午餐 — 稳定续航',
+      detail:'优质蛋白 + 蔬菜 + 适量碳水。七八分饱！吃撑 = 下午必然犯困。',
+      list: [
+        '<b>首选：</b>清蒸鲈鱼/三文鱼 + 蒜蓉西兰花 + 杂粮饭 + 番茄蛋汤',
+        '<b>备选：</b>鸡胸肉炒彩椒 + 凉拌菠菜 + 米饭 + 紫菜汤',
+        '<b>食堂版：</b>一荤一素一饭一汤，荤选清蒸/炖/煮的，不选油炸红烧',
+        '<b>注意：</b>饭后站 10min 或慢走一圈，不要立刻趴桌午睡'
+      ]
+    },
+    {
+      type:'snack', time:'15:30', title:'🍌 下午加餐 — 防崩盘',
+      detail:'午后血糖低谷最容易走神，吃对零食拉回状态。',
+      list: [
+        '<b>最佳：</b>香蕉 ×1（补钾防疲劳）+ 黑巧克力 2 小块（可可 ≥70%）',
+        '<b>备选：</b>苹果切片 + 一小把杏仁/核桃 + 绿茶（提神不心悸）',
+        '<b>应急：</b>全麦饼干 2 片 + 温柠檬水',
+        '<b>❌ 避雷：</b>奶茶（糖 crash）、薯片（高钠水肿）、含糖饮料'
+      ]
+    },
+    {
+      type:'dinner', time:'18:30', title:'🍜 晚餐 — 修复大脑',
+      detail:'清淡高营养，帮助大脑整理当天记忆。少油少盐，睡前 3h 吃完。',
+      list: [
+        '<b>首选：</b>番茄炖豆腐 + 清炒时蔬 + 小米粥/杂粮饭',
+        '<b>备选：</b>鸡丝荞麦面（少调料）+ 凉拌黄瓜 + 紫菜蛋花汤',
+        '<b>汤品：</b>菌菇豆腐汤 / 冬瓜排骨汤（去油）/ 番茄菌菇汤',
+        '<b>❌ 避雷：</b>火锅、烧烤、泡面——高钠第二天脸肿+脑子昏'
+      ]
+    },
+    {
+      type:'snack', time:'21:00', title:'🥛 晚间轻食 — 助眠',
+      detail:'睡前 1-2h 的小补给，帮助放松入睡。不吃 = 饿着睡不着也不好。',
+      list: [
+        '<b>最佳：</b>温牛奶 ×1 杯（含色氨酸助眠）+ 全麦饼干 ×1 片',
+        '<b>备选：</b>无糖酸奶 + 蜂蜜 + 几颗蓝莓',
+        '<b>饮品：</b>洋甘菊茶 / 温蜂蜜柠檬水',
+        '<b>❌ 避雷：</b>咖啡/浓茶（18:00后不喝）、泡面、辣条、冰淇淋'
+      ]
+    },
+  ];
+  var mealPlan = document.getElementById('mealPlan');
+  meals.forEach(function(m) {
+    var listHtml = '';
+    m.list.forEach(function(li) { listHtml += '<li>' + li + '</li>'; });
+    mealPlan.innerHTML +=
+      '<div class="meal-card ' + m.type + '">' +
+        '<div class="meal-time">' + m.time + '</div>' +
+        '<div class="meal-content">' +
+          '<div class="meal-title">' + m.title + '</div>' +
+          '<div class="meal-detail">' + m.detail + '</div>' +
+          '<ul class="meal-list">' + listHtml + '</ul>' +
+        '</div>' +
+      '</div>';
+  });
+
+  // 补脑食物清单
+  mealPlan.innerHTML +=
+    '<div class="life-section" style="margin-top:0.8rem;">' +
+      '<h3>🧠 补脑食物清单（考前多吃）</h3>' +
+      '<div class="food-grid">' +
+        '<div class="food-item">' +
+          '<div class="food-name">🐟 深海鱼（三文鱼/鲭鱼/鲈鱼）</div>' +
+          '<div class="food-why">DHA 是大脑灰质的主要成分，直接提升记忆和专注力</div>' +
+          '<div class="food-how">清蒸/烤，每周 2-3 次</div>' +
+        '</div>' +
+        '<div class="food-item">' +
+          '<div class="food-name">🥚 鸡蛋（尤其是蛋黄）</div>' +
+          '<div class="food-why">胆碱合成乙酰胆碱——记忆神经递质的关键原料</div>' +
+          '<div class="food-how">每天 1-2 个，水煮最佳</div>' +
+        '</div>' +
+        '<div class="food-item">' +
+          '<div class="food-name">🫐 蓝莓/深色浆果</div>' +
+          '<div class="food-why">花青素抗氧化，保护脑细胞，改善短期记忆</div>' +
+          '<div class="food-how">每天一小把，加在燕麦或酸奶里</div>' +
+        '</div>' +
+        '<div class="food-item">' +
+          '<div class="food-name">🥜 核桃/杏仁/腰果</div>' +
+          '<div class="food-why">维生素E + Omega-3，延缓认知疲劳</div>' +
+          '<div class="food-how">每天一小把（约 5-8 颗），下午加餐</div>' +
+        '</div>' +
+        '<div class="food-item">' +
+          '<div class="food-name">🥬 深绿色蔬菜（菠菜/西兰花）</div>' +
+          '<div class="food-why">叶酸 + 维生素K + 叶黄素，减缓认知衰退</div>' +
+          '<div class="food-how">每天午餐和晚餐都要有，蒜蓉/清炒</div>' +
+        '</div>' +
+        '<div class="food-item">' +
+          '<div class="food-name">🍫 黑巧克力（≥70%可可）</div>' +
+          '<div class="food-why">黄烷醇增加脑部血流量，提升 alertness</div>' +
+          '<div class="food-how">每天 20-30g（约 2 小块），下午吃</div>' +
+        '</div>' +
+        '<div class="food-item">' +
+          '<div class="food-name">🍵 绿茶/抹茶</div>' +
+          '<div class="food-why">L-茶氨酸放松但不犯困 + 适量咖啡因提神</div>' +
+          '<div class="food-how">上午 1 杯，下午 1 杯。18:00 后不喝</div>' +
+        '</div>' +
+        '<div class="food-item">' +
+          '<div class="food-name">🎃 南瓜子/奇亚籽</div>' +
+          '<div class="food-why">锌+镁+铁，缺锌导致注意力下降</div>' +
+          '<div class="food-how">撒在燕麦/沙拉上，或直接吃一小把</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // 考试当天特别菜单
+  mealPlan.innerHTML +=
+    '<div class="life-section" style="margin-top:0.6rem;">' +
+      '<h3>📅 考试当天特别菜单</h3>' +
+      '<div class="exam-tips" style="background:#f0f4ff;">' +
+        '<p style="margin-bottom:0.4rem;"><strong>考前 2h 早餐：</strong>全麦面包 + 水煮蛋 + 香蕉 + 温水。不喝牛奶（有些人紧张会乳糖不耐）。</p>' +
+        '<p style="margin-bottom:0.4rem;"><strong>考前 30min：</strong>一小块黑巧克力 + 几口温水。不要喝太多水——考试中途想上厕所打断思路。</p>' +
+        '<p style="margin-bottom:0.4rem;"><strong>考场带：</strong>温水（不是冰水！）+ 薄荷糖 1 颗（考前含，薄荷提神）。</p>' +
+        '<p style="margin-bottom:0.4rem;"><strong>考后：</strong>先喝水补充水分。不要立刻暴饮暴食庆祝——肠胃从紧张状态突然放松容易不适。清淡吃饭，考完所有再庆祝。</p>' +
+        '<p><strong>两场连考（上午+下午）：</strong>中午不要吃太饱！鸡丝粥/小份面条 + 水果。午休 20min，定闹钟！</p>' +
+      '</div>' +
+    '</div>';
+
+  // --- 作息安排 ---
+  var sleeps = [
+    { icon:'🌅', time:'06:30-07:00', note:'起床。拉开窗帘见光，伸个懒腰。早上效率最高，数学/微观放早上。' },
+    { icon:'📚', time:'08:00-11:30', note:'上午黄金学习段。做需要高度集中注意力的科目（高数/微观计算题）。' },
+    { icon:'🍽', time:'12:00-13:00', note:'午餐 + 短暂休息。饭后站一会儿或散步，不要马上趴桌。' },
+    { icon:'😴', time:'13:00-13:25', note:'午休 20-25 分钟。定闹钟！超过 40min 会进入深睡眠，醒来更困。' },
+    { icon:'📝', time:'14:00-17:30', note:'下午学习段。做记忆型任务（管理学背诵/数字贸易框架/英语）。' },
+    { icon:'🏃', time:'17:30-18:30', note:'运动放松。快走/拉伸/跳绳 20min，激活血液循环。不要剧烈运动到精疲力竭。' },
+    { icon:'📖', time:'19:30-21:30', note:'晚间回顾。翻错题、默写公式图表。不要学新东西，巩固为主。' },
+    { icon:'🛀', time:'21:30-22:30', note:'洗漱、听轻音乐、冥想。手机开夜间模式/放另一个房间。' },
+    { icon:'🌙', time:'22:30-23:00', note:'上床睡觉。考试期间保证 7-8h 睡眠。记住：熬夜 = 明天白学。' },
+  ];
+  var sleepSchedule = document.getElementById('sleepSchedule');
+  sleeps.forEach(function(s) {
+    sleepSchedule.innerHTML +=
+      '<div class="sleep-row">' +
+        '<div class="sleep-icon">' + s.icon + '</div>' +
+        '<div class="sleep-time">' + s.time + '</div>' +
+        '<div class="sleep-note">' + s.note + '</div>' +
+      '</div>';
+  });
+</script>
+
+</body>
+</html>
