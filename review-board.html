@@ -1112,20 +1112,29 @@
     });
   });
 
+  // --- 精确倒计时 ---
+  function fmtCountdown(examDate) {
+    var now = new Date();
+    var diffMs = examDate - now;
+    var diffHours = diffMs / (1000 * 60 * 60);
+    var diffDays = Math.floor(diffHours / 24);
+    var remH = Math.floor(diffHours % 24);
+    var remM = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (diffMs < 0) return '✅ 已考完';
+    if (diffHours < 1) return '⚠️ <strong>即将考试！还有 ' + Math.max(1, Math.floor(diffMs/60000)) + ' 分钟</strong>';
+    if (diffHours < 24) return '⚠️ <strong>今天考试！还有 ' + Math.floor(diffHours) + ' 小时 ' + remM + ' 分钟</strong>';
+    if (diffHours < 48) return '🔥 <strong>明天考试！还有 ' + Math.floor(diffHours) + ' 小时 ' + remM + ' 分钟</strong>';
+    return '还有 <strong>' + diffDays + ' 天 ' + remH + ' 小时</strong>';
+  }
+
   // --- 考试信息卡片 ---
   var examIcons = { '大学外语Ⅱ':'📖', '高等数学CⅡ':'📐', '数字贸易':'💻', '管理学':'📋', '微观经济学A':'📊' };
   var examCards = document.getElementById('examCards');
   var sortedExams = exams.slice().sort(function(a,b){ return a.date - b.date; });
   sortedExams.forEach(function(e) {
-    var d = daysUntil(e.date);
-    var countdownText = '';
-    if (d < 0) { countdownText = '✅ 已考完'; }
-    else if (d === 0) { countdownText = '⚠️ <strong>今天考试！</strong>'; }
-    else if (d === 1) { countdownText = '🔥 明天考试！'; }
-    else { countdownText = '还有 <strong>' + d + ' 天</strong>'; }
-
     examCards.innerHTML +=
-      '<div class="exam-card ' + e.color + '">' +
+      '<div class="exam-card ' + e.color + '" id="examCard' + e.name.replace(/[^a-zA-Z]/g,'') + '">' +
         '<div class="ec-badge ' + e.color + '">' + (examIcons[e.name]||'📝') + ' ' + e.name + '</div>' +
         '<div class="ec-subject">' + e.name + ' · ' + e.teacher + '</div>' +
         '<div class="ec-date">' + fmtDate(e.date) + '</div>' +
@@ -1134,9 +1143,17 @@
           '<span>👨‍🏫 ' + e.teacher + '</span>' +
           '<span>⏰ ' + (e.date.getHours()<10?'0':'')+e.date.getHours()+':'+(e.date.getMinutes()<10?'0':'')+e.date.getMinutes() + '</span>' +
         '</div>' +
-        '<div class="ec-countdown">' + countdownText + '</div>' +
+        '<div class="ec-countdown" data-exam="' + e.date.toISOString() + '">' + fmtCountdown(e.date) + '</div>' +
       '</div>';
   });
+
+  // 每分钟更新所有倒计时
+  setInterval(function() {
+    var els = document.querySelectorAll('.ec-countdown[data-exam]');
+    els.forEach(function(el) {
+      el.innerHTML = fmtCountdown(new Date(el.dataset.exam));
+    });
+  }, 60000);
 
   // --- 饮食安排 ---
   var meals = [
