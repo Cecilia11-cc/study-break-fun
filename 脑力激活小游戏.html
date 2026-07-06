@@ -447,6 +447,62 @@
   .spider-stock-pile.empty { opacity: 0.2; cursor: default; }
   .spider-hint { font-size: 12px; color: var(--text-dim); margin-top: 6px; text-align: center; }
 
+  /* === 贪吃蛇 === */
+  #snakeCanvas { background: #0a0a14; border-radius: var(--radius-sm); display: block; margin: 0 auto; }
+  .snake-hud { display: flex; gap: 20px; justify-content: center; margin-bottom: 8px; }
+  .snake-hud span { font-size: 14px; color: var(--text-dim); }
+  .snake-hud b { color: var(--success); font-size: 18px; }
+
+  /* === 高等数学 === */
+  .math-quiz-cats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+  .math-quiz-cat {
+    padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.12);
+    background: transparent; color: var(--text-dim); font-family: inherit; transition: 0.2s;
+  }
+  .math-quiz-cat:hover { color: #fff; }
+  .math-quiz-cat.active { background: rgba(108,99,255,0.2); color: var(--primary-glow); border-color: var(--primary); }
+  .math-quiz-q {
+    font-size: 22px; font-weight: 700; text-align: center; margin: 14px 0; line-height: 1.6;
+    min-height: 50px; display: flex; align-items: center; justify-content: center;
+  }
+  .math-quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 400px; }
+  @media (max-width: 400px) { .math-quiz-opts { grid-template-columns: 1fr; } }
+  .math-quiz-opt {
+    padding: 14px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600;
+    cursor: pointer; border: 2px solid rgba(255,255,255,0.1); background: var(--surface2);
+    color: var(--text); font-family: inherit; transition: 0.2s; text-align: center;
+  }
+  .math-quiz-opt:hover { border-color: var(--primary); background: rgba(108,99,255,0.08); }
+  .math-quiz-opt.correct { border-color: var(--success); background: rgba(78,204,163,0.15); color: var(--success); }
+  .math-quiz-opt.wrong { border-color: var(--danger); background: rgba(255,107,107,0.15); color: var(--danger); }
+  .math-step-hint { font-size: 13px; color: var(--warning); margin-top: 10px; text-align: center; min-height: 20px; }
+
+  /* === 汉语言知识 === */
+  .cn-cats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+  .cn-cat {
+    padding: 6px 12px; border-radius: 16px; font-size: 11px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.12);
+    background: transparent; color: var(--text-dim); font-family: inherit; transition: 0.2s;
+  }
+  .cn-cat:hover { color: #fff; }
+  .cn-cat.active { background: rgba(255,107,157,0.2); color: var(--pink); border-color: var(--pink); }
+  .cn-quiz-q {
+    font-size: 17px; font-weight: 600; text-align: center; margin: 14px 0; line-height: 1.7;
+    min-height: 44px;
+  }
+  .cn-quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 420px; }
+  @media (max-width: 400px) { .cn-quiz-opts { grid-template-columns: 1fr; } }
+  .cn-quiz-opt {
+    padding: 12px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+    cursor: pointer; border: 2px solid rgba(255,255,255,0.1); background: var(--surface2);
+    color: var(--text); font-family: inherit; transition: 0.2s; text-align: center;
+  }
+  .cn-quiz-opt:hover { border-color: var(--pink); background: rgba(255,107,157,0.08); }
+  .cn-quiz-opt.correct { border-color: var(--success); background: rgba(78,204,163,0.15); color: var(--success); }
+  .cn-quiz-opt.wrong { border-color: var(--danger); background: rgba(255,107,107,0.15); color: var(--danger); }
+  .cn-explain { font-size: 12px; color: var(--text-dim); margin-top: 8px; text-align: center; min-height: 18px; }
+
   /* 响应式补充 */
   @media (max-width: 480px) {
     .game-grid { grid-template-columns: 1fr; }
@@ -514,6 +570,24 @@
         <div class="g-name">蜘蛛纸牌</div>
         <div class="g-desc">K到A顺子消除，清空所有牌</div>
         <div class="g-best" id="bestSpider">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('snake')">
+        <div class="g-icon">🐍</div>
+        <div class="g-name">贪吃蛇</div>
+        <div class="g-desc">经典街机，吃果子越长越大</div>
+        <div class="g-best" id="bestSnake">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('mathquiz')">
+        <div class="g-icon">📐</div>
+        <div class="g-name">高数挑战</div>
+        <div class="g-desc">极限·积分·微分方程·级数·几何</div>
+        <div class="g-best" id="bestMathquiz">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('chinese')">
+        <div class="g-icon">📚</div>
+        <div class="g-name">汉语言知识</div>
+        <div class="g-desc">按照考纲分类的语文题库</div>
+        <div class="g-best" id="bestChinese">--</div>
       </div>
     </div>
   </div>
@@ -632,6 +706,62 @@
       <div class="spider-hint">💡 点击一张牌选中，再点击目标列放下 | K→A顺子自动消除 | 同花色才能连</div>
     </div>
   </div>
+
+  <!-- ========== 贪吃蛇 ========== -->
+  <div class="screen" id="snakeScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">🐍 贪吃蛇</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="snakeScore">0</div><div class="hud-label">得分</div></div>
+        <div class="hud-item"><div class="hud-val" id="snakeBest">0</div><div class="hud-label">最高</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="snakeArea">
+      <canvas id="snakeCanvas" width="400" height="400"></canvas>
+      <div class="snake-hud" style="margin-top:8px;">
+        <span>方向键/WASD 移动</span><span>空格 暂停</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 高等数学挑战 ========== -->
+  <div class="screen" id="mathquizScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">📐 高数挑战</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="mqScore">0</div><div class="hud-label">得分</div></div>
+        <div class="hud-item"><div class="hud-val" id="mqCombo">0🔥</div><div class="hud-label">连击</div></div>
+        <div class="hud-item"><div class="hud-val" id="mqRound">1/20</div><div class="hud-label">题号</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="mathquizArea">
+      <div class="math-quiz-cats" id="mqCats"></div>
+      <div class="math-quiz-q" id="mqQuestion"></div>
+      <div class="math-quiz-opts" id="mqOpts"></div>
+      <div class="math-step-hint" id="mqHint"></div>
+    </div>
+  </div>
+
+  <!-- ========== 汉语言知识 ========== -->
+  <div class="screen" id="chineseScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">📚 汉语言知识</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="cnScore">0</div><div class="hud-label">得分</div></div>
+        <div class="hud-item"><div class="hud-val" id="cnCombo">0🔥</div><div class="hud-label">连击</div></div>
+        <div class="hud-item"><div class="hud-val" id="cnRound">1/30</div><div class="hud-label">题号</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="chineseArea">
+      <div class="cn-cats" id="cnCats"></div>
+      <div class="cn-quiz-q" id="cnQuestion"></div>
+      <div class="cn-quiz-opts" id="cnOpts"></div>
+      <div class="cn-explain" id="cnExplain"></div>
+    </div>
+  </div>
 </div>
 
 <!-- 结果弹窗容器 -->
@@ -707,6 +837,9 @@ function updateMenuStats() {
   document.getElementById('bestReaction').textContent = s.reaction ? `${s.reaction}ms` : '--';
   document.getElementById('bestMinesweeper').textContent = s.minesweeper ? `${s.minesweeper}s` : '--';
   document.getElementById('bestSpider').textContent = formatBest(s.spider);
+  document.getElementById('bestSnake').textContent = formatBest(s.snake);
+  document.getElementById('bestMathquiz').textContent = formatBest(s.mathquiz);
+  document.getElementById('bestChinese').textContent = formatBest(s.chinese);
 }
 
 // ==================== 结果弹窗 ====================
@@ -808,6 +941,9 @@ function startGame(game) {
   else if (game === 'reaction') startReaction();
   else if (game === 'minesweeper') startMinesweeper();
   else if (game === 'spider') startSpider();
+  else if (game === 'snake') startSnake();
+  else if (game === 'mathquiz') startMathQuiz();
+  else if (game === 'chinese') startChinese();
 }
 
 function startMemory() {
@@ -1894,6 +2030,383 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('reactZone').addEventListener('click', clickReaction);
   updateMenuStats();
 });
+
+// ==================== 游戏7：贪吃蛇 ====================
+let snakeState = null;
+
+function startSnake() {
+  showScreen('snakeScreen');
+  const s = loadStats();
+  document.getElementById('snakeScore').textContent = '0';
+  document.getElementById('snakeBest').textContent = s.snake || '0';
+
+  const canvas = document.getElementById('snakeCanvas');
+  // Responsive size
+  const maxW = Math.min(window.innerWidth - 60, 400);
+  canvas.width = maxW; canvas.height = maxW;
+  const ctx = canvas.getContext('2d');
+  const gridSize = 20;
+  const cellW = maxW / gridSize;
+
+  snakeState = {
+    canvas, ctx, gridSize, cellW,
+    snake: [{x:10,y:10},{x:9,y:10},{x:8,y:10}],
+    dir: {x:1,y:0}, nextDir: {x:1,y:0},
+    food: null, score: 0, running: true, paused: false,
+    speed: 120, lastMove: 0, animId: null
+  };
+  snakeState.food = spawnSnakeFood();
+  document.getElementById('snakeArea').onkeydown = null; // reset
+  snakeLoop(0);
+}
+
+function spawnSnakeFood() {
+  const s = snakeState;
+  let fx, fy;
+  do {
+    fx = Math.floor(Math.random() * s.gridSize);
+    fy = Math.floor(Math.random() * s.gridSize);
+  } while (s.snake.some(seg => seg.x === fx && seg.y === fy));
+  return {x: fx, y: fy};
+}
+
+function snakeLoop(ts) {
+  const s = snakeState;
+  if (!s || !s.running) return;
+  s.animId = requestAnimationFrame(snakeLoop);
+
+  if (s.paused) return;
+  if (ts - s.lastMove < s.speed) return;
+  s.lastMove = ts;
+
+  s.dir = {...s.nextDir};
+  const head = {x: s.snake[0].x + s.dir.x, y: s.snake[0].y + s.dir.y};
+
+  // Wall collision
+  if (head.x < 0 || head.x >= s.gridSize || head.y < 0 || head.y >= s.gridSize) {
+    endSnake(); return;
+  }
+  // Self collision
+  if (s.snake.some(seg => seg.x === head.x && seg.y === head.y)) {
+    endSnake(); return;
+  }
+
+  s.snake.unshift(head);
+  if (head.x === s.food.x && head.y === s.food.y) {
+    s.score += 10;
+    document.getElementById('snakeScore').textContent = s.score;
+    s.food = spawnSnakeFood();
+    s.speed = Math.max(50, s.speed - 2);
+    sfxCorrect();
+  } else {
+    s.snake.pop();
+  }
+
+  drawSnake();
+}
+
+function drawSnake() {
+  const {ctx, canvas, cellW, snake, food, gridSize} = snakeState;
+  ctx.fillStyle = '#0a0a14';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= gridSize; i++) {
+    ctx.beginPath(); ctx.moveTo(i*cellW,0); ctx.lineTo(i*cellW,canvas.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i*cellW); ctx.lineTo(canvas.width,i*cellW); ctx.stroke();
+  }
+
+  // Food
+  ctx.fillStyle = '#ff6b6b';
+  ctx.beginPath();
+  ctx.arc(food.x*cellW+cellW/2, food.y*cellW+cellW/2, cellW/2.2, 0, Math.PI*2);
+  ctx.fill();
+
+  // Snake
+  snake.forEach((seg, i) => {
+    const alpha = 1 - i / (snake.length + 10);
+    ctx.fillStyle = i === 0 ? '#4ecca3' : `rgba(78,204,163,${alpha})`;
+    ctx.fillRect(seg.x*cellW+1, seg.y*cellW+1, cellW-2, cellW-2);
+  });
+}
+
+function endSnake() {
+  const s = snakeState;
+  s.running = false;
+  if (s.animId) cancelAnimationFrame(s.animId);
+  const isBest = setBest('snake', s.score);
+  addPlay(); updateMenuStats();
+  document.getElementById('snakeBest').textContent = Math.max(s.score, parseInt(document.getElementById('snakeBest').textContent)||0);
+  sfxWrong();
+  addTimer(() => {
+    showResult('🐍', '游戏结束！', `${s.score} 分`,
+      `蛇长 ${s.snake.length} 节`, isBest, startSnake, goMenu);
+  }, 300);
+}
+
+// 键盘控制
+document.addEventListener('keydown', function snakeKey(e) {
+  if (currentGame !== 'snake' || !snakeState) return;
+  const key = e.key.toLowerCase();
+  const s = snakeState;
+  if (key === ' ' || key === 'escape') { e.preventDefault(); s.paused = !s.paused; return; }
+  if (s.paused) return;
+  if ((key === 'w' || key === 'arrowup') && s.dir.y !== 1) s.nextDir = {x:0,y:-1};
+  if ((key === 's' || key === 'arrowdown') && s.dir.y !== -1) s.nextDir = {x:0,y:1};
+  if ((key === 'a' || key === 'arrowleft') && s.dir.x !== 1) s.nextDir = {x:-1,y:0};
+  if ((key === 'd' || key === 'arrowright') && s.dir.x !== -1) s.nextDir = {x:1,y:0};
+});
+
+// 触屏滑动
+(function(){ let tx=0,ty=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchmove',function(e){
+  if(currentGame!=='snake'||!snakeState||snakeState.paused)return;
+  const dx=e.touches[0].clientX-tx, dy=e.touches[0].clientY-ty;
+  if(Math.abs(dx)<20&&Math.abs(dy)<20)return;
+  const s=snakeState;
+  if(Math.abs(dx)>Math.abs(dy)){ s.nextDir=dx>0?{x:1,y:0}:{x:-1,y:0}; if(s.dir.x!==0)return; }
+  else{ s.nextDir=dy>0?{x:0,y:1}:{x:0,y:-1}; if(s.dir.y!==0)return; }
+  tx=e.touches[0].clientX;ty=e.touches[0].clientY;
+},{passive:true});
+})();
+
+// ==================== 游戏8：高等数学挑战 ====================
+let mqState = null;
+
+const MATH_QUESTIONS = {
+  limits: [
+    {q:'lim(x→0) sin(x)/x = ?', opts:['0','1','∞','不存在'], ans:1, hint:'重要极限：lim(x→0) sin(x)/x = 1'},
+    {q:'lim(x→∞) (1+1/x)^x = ?', opts:['1','∞','e','0'], ans:2, hint:'第二个重要极限：lim(x→∞)(1+1/x)^x = e'},
+    {q:'lim(x→0) (e^x-1)/x = ?', opts:['0','e','1','∞'], ans:2, hint:'等价无穷小：e^x-1 ~ x (x→0)'},
+    {q:'lim(x→0) ln(1+x)/x = ?', opts:['0','e','1','∞'], ans:2, hint:'等价无穷小：ln(1+x) ~ x (x→0)'},
+    {q:'lim(x→0) (1-cos x)/x² = ?', opts:['0','1','1/2','2'], ans:2, hint:'1-cosx ~ x²/2，所以极限为 1/2'},
+    {q:'lim(x→∞) (x/(x+1))^x = ?', opts:['e','1/e','1','∞'], ans:1, hint:'化为 (1-1/(x+1))^x → e^{-1} = 1/e'},
+  ],
+  integrals: [
+    {q:'∫ x² dx = ?', opts:['x³/3 + C','x³ + C','2x + C','x²/2 + C'], ans:0, hint:'幂函数积分：∫xⁿdx = xⁿ⁺¹/(n+1)+C'},
+    {q:'∫ sin(x) dx = ?', opts:['cos(x)+C','-cos(x)+C','sin(x)+C','-sin(x)+C'], ans:1, hint:'∫sinx dx = -cosx + C'},
+    {q:'∫ e^x dx = ?', opts:['e^x/x+C','x·e^x+C','e^x+C','ln(e^x)+C'], ans:2, hint:'e^x积分等于自身：∫eˣdx = eˣ+C'},
+    {q:'∫ ln(x) dx = ?', opts:['x·ln(x)-x+C','ln(x)/x+C','x/ln(x)+C','x·ln(x)+C'], ans:0, hint:'分部积分：∫lnx dx = x·lnx - x + C'},
+    {q:'∫₀¹ x dx = ?', opts:['0','1','1/2','2'], ans:2, hint:'定积分：∫₀¹xdx = [x²/2]₀¹ = 1/2'},
+    {q:'∫ cos(2x) dx = ?', opts:['sin(2x)+C','2sin(2x)+C','sin(2x)/2+C','-sin(2x)/2+C'], ans:2, hint:'凑微分：∫cos(ax)dx = sin(ax)/a + C'},
+  ],
+  diffEq: [
+    {q:"y' = y 的通解是？", opts:['y=Ce^x','y=C+e^x','y=Cx','y=ln(x)+C'], ans:0, hint:"可分离变量：dy/y=dx → ln|y|=x+C → y=Ceˣ"},
+    {q:"y'' - y = 0 的通解？", opts:['C₁eˣ+C₂e⁻ˣ','eˣ(C₁+C₂x)','C₁cosx+C₂sinx','C₁+C₂eˣ'], ans:0, hint:'特征方程 r²-1=0 → r=±1 → y=C₁eˣ+C₂e⁻ˣ'},
+    {q:"y'' + y = 0 的通解？", opts:['C₁eˣ+C₂e⁻ˣ','eˣ(C₁+C₂x)','C₁cos x+C₂sin x','C₁+C₂x'], ans:2, hint:'特征方程 r²+1=0 → r=±i → y=C₁cosx+C₂sinx'},
+    {q:"y' + P(x)y = Q(x) 的解法？", opts:['分离变量','常数变易法/公式法','特征方程','待定系数'], ans:1, hint:'一阶线性微分方程，通解公式：y=e^{-∫Pdx}[∫Qe^{∫Pdx}dx+C]'},
+    {q:"y'' - 3y' + 2y = 0 的特根为？", opts:['1,2','-1,-2','1,-2','-1,2'], ans:0, hint:'r²-3r+2=0 → (r-1)(r-2)=0 → r=1,2'},
+  ],
+  series: [
+    {q:'p-级数 ∑1/nᵖ 收敛的条件是？', opts:['p>0','p≥1','p>1','p<1'], ans:2, hint:'p-级数：当且仅当 p>1 时收敛'},
+    {q:'几何级数 ∑qⁿ 收敛的条件？', opts:['|q|≤1','|q|<1','q<1','q≤1'], ans:1, hint:'几何级数：|q|<1 时收敛于 1/(1-q)'},
+    {q:'交错级数∑(-1)ⁿ⁻¹/n 的敛散性？', opts:['发散','条件收敛','绝对收敛','不确定'], ans:1, hint:'莱布尼茨判别：1/n递减→0，条件收敛；但∑1/n发散所以非绝对收敛'},
+    {q:'eˣ 的麦克劳林展开 = ?', opts:['∑xⁿ/n','∑xⁿ/n!','∑xⁿ','∑n!xⁿ'], ans:1, hint:'eˣ = 1+x+x²/2!+x³/3!+... = ∑xⁿ/n!'},
+    {q:'幂级数 ∑xⁿ/n 的收敛半径 R = ?', opts:['0','1','∞','e'], ans:1, hint:'R=1/lim|aₙ₊₁/aₙ|=1/lim(n/n+1)=1'},
+  ],
+  geometry: [
+    {q:'y=x² 绕x轴旋转的体积公式？', opts:['V=π∫x²dx','V=π∫x⁴dx','V=2π∫x³dx','V=π∫xdx'], ans:1, hint:'旋转体体积：V=π∫[f(x)]²dx = π∫x⁴dx'},
+    {q:'y=x² 在 [0,1] 上的弧长公式？', opts:['∫√(1+2x)dx','∫(1+4x²)dx','∫√(1+4x²)dx','∫√(1+x²)dx'], ans:2, hint:'弧长：L=∫√(1+[f\'(x)]²)dx = ∫√(1+4x²)dx'},
+    {q:'平面 y=x 与 y=x² 围成区域的面积？', opts:['1/3','1/6','1/2','2/3'], ans:1, hint:'交点(0,0)(1,1)，面积=∫₀¹(x-x²)dx=1/2-1/3=1/6'},
+    {q:'椭球 x²/a²+y²/b²+z²/c²≤1 的体积？', opts:['4πabc','4πabc/3','πabc','2πabc/3'], ans:1, hint:'椭球体积 = 4πabc/3，当a=b=c=r时退化为球体积4πr³/3'},
+    {q:'∫∫_D (x+y) dxdy，D: [0,1]×[0,1] = ?', opts:['0','1/2','1','2'], ans:2, hint:'二重积分=∫₀¹∫₀¹(x+y)dxdy=∫₀¹[½+y]dy=½+½=1'},
+  ]
+};
+
+function startMathQuiz() {
+  showScreen('mathquizScreen');
+  document.getElementById('mqScore').textContent = '0';
+  document.getElementById('mqCombo').textContent = '0🔥';
+  document.getElementById('mqRound').textContent = '1/20';
+
+  mqState = { score: 0, combo: 0, round: 0, total: 20, cat: 'limits', answered: false };
+  renderMQCats();
+  nextMQ();
+}
+
+function renderMQCats() {
+  const cats = [
+    {key:'limits',label:'📐 极限'},{key:'integrals',label:'∫ 积分'},
+    {key:'diffEq',label:'📝 微分方程'},{key:'series',label:'∑ 级数'},{key:'geometry',label:'📏 几何'}
+  ];
+  const el = document.getElementById('mqCats');
+  el.innerHTML = cats.map(c =>
+    `<button class="math-quiz-cat${mqState.cat===c.key?' active':''}" onclick="mqSetCat('${c.key}')">${c.label}</button>`
+  ).join('');
+}
+
+function mqSetCat(cat) {
+  mqState.cat = cat; renderMQCats();
+}
+
+function nextMQ() {
+  if (mqState.round >= mqState.total) { endMathQuiz(); return; }
+  mqState.round++;
+  mqState.answered = false;
+  document.getElementById('mqRound').textContent = `${mqState.round}/${mqState.total}`;
+  document.getElementById('mqHint').textContent = '';
+
+  const pool = MATH_QUESTIONS[mqState.cat] || MATH_QUESTIONS.limits;
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  mqState.currentQ = q;
+  document.getElementById('mqQuestion').textContent = q.q;
+  const optsEl = document.getElementById('mqOpts');
+  optsEl.innerHTML = q.opts.map((o,i) =>
+    `<button class="math-quiz-opt" onclick="answerMQ(${i})">${String.fromCharCode(65+i)}. ${o}</button>`
+  ).join('');
+}
+
+function answerMQ(idx) {
+  if (mqState.answered) return;
+  mqState.answered = true;
+  const q = mqState.currentQ;
+  const btns = document.querySelectorAll('.math-quiz-opt');
+
+  if (idx === q.ans) {
+    mqState.score += 10; mqState.combo++;
+    document.getElementById('mqScore').textContent = mqState.score;
+    document.getElementById('mqCombo').textContent = `${mqState.combo}🔥`;
+    btns[idx].classList.add('correct');
+    document.getElementById('mqHint').textContent = '✅ ' + q.hint;
+    sfxCorrect();
+    if (mqState.combo % 5 === 0) sfxCombo();
+    const s2 = loadStats(); if (mqState.combo > (s2.maxCombo||0)) { s2.maxCombo=mqState.combo; saveStats(s2); }
+  } else {
+    mqState.combo = 0;
+    document.getElementById('mqCombo').textContent = '0🔥';
+    btns[idx].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    document.getElementById('mqHint').textContent = '❌ ' + q.hint;
+    sfxWrong();
+  }
+  addTimer(nextMQ, 1200);
+}
+
+function endMathQuiz() {
+  const isBest = setBest('mathquiz', mqState.score);
+  addPlay(); updateMenuStats();
+  addTimer(() => {
+    showResult('📐', '高数挑战完成！', `${mqState.score} 分`,
+      `共 ${mqState.total} 题`, isBest, startMathQuiz, goMenu);
+  }, 300);
+}
+
+// ==================== 游戏9：汉语言知识 ====================
+let cnState = null;
+
+const CN_QUESTIONS = {
+  modern: [
+    {q:'下列哪个是单纯词？', opts:['蜘蛛','玻璃','仿佛','妈妈'], ans:1, exp:'单纯词由一个语素构成。"玻璃"音译外来词，不可拆分。"蜘蛛""仿佛"为合成词。"妈妈"为重叠式合成词。'},
+    {q:'"她跑得很快"中"得"的词性是？', opts:['动词','副词','结构助词','介词'], ans:2, exp:'结构助词"得"连接补语，表示程度或结果。同类：的（定语）、地（状语）、得（补语）。'},
+    {q:'下列哪个成语没有错别字？', opts:['按步就班','变本加利','川流不息','计日成功'], ans:2, exp:'正确的是："川流不息"。错：按部就班、变本加厉、计日程功。'},
+    {q:'"把"字句的基本结构是？', opts:['S+把+O+V','S+V+把+O','把+S+O+V','S+把+V+O'], ans:0, exp:'"把"字句：主语+把+宾语+动词（+其他成分）。如"我把书看完了"。'},
+  ],
+  ancient: [
+    {q:'下列哪个是通假字？', opts:['"莫"通"暮"','"日"通"天"','"水"通"川"','"山"通"岳"'], ans:0, exp:'通假字：古书中用音同/音近的字代替本字。"莫"本义日落，后借为否定词，另造"暮"字。'},
+    {q:'"之"字在"大道之行也"中的用法是？', opts:['代词','动词','结构助词"的"','主谓之间取消独立性'], ans:3, exp:'"大道之行也"中的"之"用于主谓之间，取消句子独立性，使其成为短语。常见于文言文。'},
+    {q:'"其"在"其皆出于此乎"中表示？', opts:['代词','语气副词（大概）','连词','介词'], ans:1, exp:'"其"作语气副词，表推测语气，相当于"大概""恐怕"。又如"其是之谓乎"。'},
+    {q:'下列哪个是被动句？', opts:['吾长见笑于大方之家','学而时习之','温故而知新','人不知而不愠'], ans:0, exp:'"见...于..."是文言被动句式。"见笑于大方之家"=被大方之家嘲笑。'},
+  ],
+  literature: [
+    {q:'《红楼梦》前80回的作者是？', opts:['罗贯中','吴承恩','曹雪芹','施耐庵'], ans:2, exp:'《红楼梦》前80回曹雪芹著，后40回高鹗续。是中国古典小说巅峰之作。'},
+    {q:'"路漫漫其修远兮，吾将上下而求索"出自？', opts:['《诗经》','《离骚》','《论语》','《庄子》'], ans:1, exp:'屈原《离骚》中的名句，表达了对理想的不懈追求。'},
+    {q:'下列属于"唐宋八大家"的是？', opts:['李白','杜甫','苏轼','白居易'], ans:2, exp:'唐宋八大家：韩愈、柳宗元、欧阳修、苏洵、苏轼、苏辙、王安石、曾巩。李白杜甫是诗人，不在此列。'},
+    {q:'《史记》的作者和体例？', opts:['班固·断代史','司马迁·纪传体通史','左丘明·编年体','刘向·国别体'], ans:1, exp:'司马迁《史记》——中国第一部纪传体通史，130篇，记黄帝至汉武帝3000年历史。'},
+  ],
+  rhetoric: [
+    {q:'"飞流直下三千尺"用了什么修辞？', opts:['比喻','拟人','夸张','对偶'], ans:2, exp:'李白《望庐山瀑布》，"三千尺"极言其高，是典型的夸张修辞。'},
+    {q:'"朱门酒肉臭，路有冻死骨"用了？', opts:['比喻','对比','拟人','排比'], ans:1, exp:'杜甫名句。富贵与贫苦形成鲜明对比。朱门=富贵人家（借代）。'},
+    {q:'"问君能有几多愁？恰似一江春水向东流"的修辞？', opts:['设问+比喻','反问+拟人','设问+夸张','反问+对比'], ans:0, exp:'先问后答=设问；愁比作江水=比喻。李煜《虞美人》千古名句。'},
+  ],
+  culture: [
+    {q:'"四书"不包括哪一部？', opts:['《大学》','《中庸》','《论语》','《春秋》'], ans:3, exp:'四书：《大学》《中庸》《论语》《孟子》。五经：《诗》《书》《礼》《易》《春秋》。'},
+    {q:'"二十四节气"中夏季的第三个节气是？', opts:['立夏','小满','芒种','夏至'], ans:2, exp:'夏季节气：立夏→小满→芒种→夏至→小暑→大暑。芒种=有芒之谷可播种。'},
+    {q:'"三元及第"中的"三元"指？', opts:['解元、会元、状元','状元、榜眼、探花','乡试、会试、殿试','秀才、举人、进士'], ans:0, exp:'科举考试中乡试第一=解元，会试第一=会元，殿试第一=状元。连中三元=三场都考第一。'},
+  ],
+  poetry: [
+    {q:'"海内存知己，天涯若比邻"的作者是？', opts:['李白','杜甫','王勃','王维'], ans:2, exp:'王勃《送杜少府之任蜀州》。初唐四杰之一，此诗为送别名篇。'},
+    {q:'下列哪个词牌属于"婉约派"代表？', opts:['《念奴娇》','《满江红》','《声声慢》','《永遇乐》'], ans:2, exp:'李清照《声声慢》——婉约派代表作。"寻寻觅觅，冷冷清清"。苏轼《念奴娇》、岳飞《满江红》均为豪放派。'},
+    {q:'"大漠孤烟直，长河落日圆"是谁写的？', opts:['李白','杜甫','王维','孟浩然'], ans:2, exp:'王维《使至塞上》。王维=诗佛，山水田园诗派代表，诗中有画画中有诗。'},
+  ]
+};
+
+function startChinese() {
+  showScreen('chineseScreen');
+  document.getElementById('cnScore').textContent = '0';
+  document.getElementById('cnCombo').textContent = '0🔥';
+  document.getElementById('cnRound').textContent = '1/30';
+  cnState = { score: 0, combo: 0, round: 0, total: 30, cat: 'all', answered: false };
+  renderCNCats();
+  nextCN();
+}
+
+function renderCNCats() {
+  const cats = [
+    {key:'all',label:'🎯 全部'},{key:'modern',label:'📝 现代汉语'},{key:'ancient',label:'📜 古代汉语'},
+    {key:'literature',label:'📖 文学常识'},{key:'rhetoric',label:'✍️ 修辞手法'},
+    {key:'culture',label:'🏛 文化常识'},{key:'poetry',label:'🎵 诗词鉴赏'}
+  ];
+  document.getElementById('cnCats').innerHTML = cats.map(c =>
+    `<button class="cn-cat${cnState.cat===c.key?' active':''}" onclick="cnSetCat('${c.key}')">${c.label}</button>`
+  ).join('');
+}
+
+function cnSetCat(cat) { cnState.cat = cat; renderCNCats(); }
+
+function nextCN() {
+  if (cnState.round >= cnState.total) { endChinese(); return; }
+  cnState.round++;
+  cnState.answered = false;
+  document.getElementById('cnRound').textContent = `${cnState.round}/${cnState.total}`;
+  document.getElementById('cnExplain').textContent = '';
+
+  const keys = cnState.cat === 'all' ? Object.keys(CN_QUESTIONS) : [cnState.cat];
+  const pool = CN_QUESTIONS[keys[Math.floor(Math.random() * keys.length)]];
+  const q = pool[Math.floor(Math.random() * pool.length)];
+  cnState.currentQ = q;
+  document.getElementById('cnQuestion').textContent = q.q;
+  document.getElementById('cnOpts').innerHTML = q.opts.map((o,i) =>
+    `<button class="cn-quiz-opt" onclick="answerCN(${i})">${String.fromCharCode(65+i)}. ${o}</button>`
+  ).join('');
+}
+
+function answerCN(idx) {
+  if (cnState.answered) return;
+  cnState.answered = true;
+  const q = cnState.currentQ;
+  const btns = document.querySelectorAll('.cn-quiz-opt');
+
+  if (idx === q.ans) {
+    cnState.score += 10; cnState.combo++;
+    document.getElementById('cnScore').textContent = cnState.score;
+    document.getElementById('cnCombo').textContent = `${cnState.combo}🔥`;
+    btns[idx].classList.add('correct');
+    document.getElementById('cnExplain').textContent = '✅ ' + q.exp;
+    sfxCorrect();
+    if (cnState.combo % 5 === 0) sfxCombo();
+    const s2 = loadStats(); if (cnState.combo > (s2.maxCombo||0)) { s2.maxCombo=cnState.combo; saveStats(s2); }
+  } else {
+    cnState.combo = 0;
+    document.getElementById('cnCombo').textContent = '0🔥';
+    btns[idx].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    document.getElementById('cnExplain').textContent = '❌ ' + q.exp;
+    sfxWrong();
+  }
+  addTimer(nextCN, 1500);
+}
+
+function endChinese() {
+  const isBest = setBest('chinese', cnState.score);
+  addPlay(); updateMenuStats();
+  addTimer(() => {
+    showResult('📚', '汉语言知识完成！', `${cnState.score} 分`,
+      `共 ${cnState.total} 题`, isBest, startChinese, goMenu);
+  }, 300);
+}
 
 // ==================== 键盘快捷键 ====================
 document.addEventListener('keydown', (e) => {
