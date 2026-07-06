@@ -275,6 +275,10 @@
       <span class="title">🎹 迷你钢琴</span>
       <span style="font-size:12px;color:var(--text-dim)">音色:</span>
       <button class="tool-btn active" onclick="setPianoSound('piano')" id="sndPiano">🎹 钢琴</button>
+      <button class="tool-btn" onclick="setPianoSound('guitar')" id="sndGuitar">🎸 吉他</button>
+      <button class="tool-btn" onclick="setPianoSound('flute')" id="sndFlute">🎵 长笛</button>
+      <button class="tool-btn" onclick="setPianoSound('violin')" id="sndViolin">🎻 小提琴</button>
+      <button class="tool-btn" onclick="setPianoSound('drum')" id="sndDrum">🥁 打击乐</button>
       <button class="tool-btn" onclick="setPianoSound('bell')" id="sndBell">🔔 八音盒</button>
       <button class="tool-btn" onclick="setPianoSound('synth')" id="sndSynth">🎛 电子</button>
     </div>
@@ -747,8 +751,9 @@ function buildPiano() {
 
 function setPianoSound(sound) {
   pianoState.sound = sound;
-  ['sndPiano','sndBell','sndSynth'].forEach(id => document.getElementById(id).classList.remove('active'));
-  document.getElementById('snd'+sound.charAt(0).toUpperCase()+sound.slice(1)).classList.add('active');
+  document.querySelectorAll('.tool-btn[id^="snd"]').forEach(b => b.classList.remove('active'));
+  const map = {piano:'sndPiano',guitar:'sndGuitar',flute:'sndFlute',violin:'sndViolin',drum:'sndDrum',bell:'sndBell',synth:'sndSynth'};
+  document.getElementById(map[sound]).classList.add('active');
 }
 
 function playPianoNote(noteName, element) {
@@ -765,28 +770,88 @@ function playPianoNote(noteName, element) {
 
   if (pianoState.sound === 'piano') {
     osc.type = 'triangle';
-    // 模拟钢琴衰减
     gain.gain.setValueAtTime(0.12, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-    // 加一点和声
     const osc2 = audioCtx.createOscillator();
     const gain2 = audioCtx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.value = freq * 2;
+    osc2.type = 'sine'; osc2.frequency.value = freq * 2;
     gain2.gain.setValueAtTime(0.03, now);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
     osc2.connect(gain2); gain2.connect(audioCtx.destination);
     osc2.start(); osc2.stop(now + 0.3);
+  } else if (pianoState.sound === 'guitar') {
+    osc.type = 'triangle';
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+    // 吉他泛音：基频 + 2倍 + 3倍 + 轻微detune
+    [1,2,3].forEach(function(m,i){
+      const o=audioCtx.createOscillator(), g2=audioCtx.createGain();
+      o.type='sine'; o.frequency.value=freq*m+(i===1?1:0);
+      g2.gain.setValueAtTime(0.04/(i+1),now);
+      g2.gain.exponentialRampToValueAtTime(0.001,now+1.0/(i+1));
+      o.connect(g2);g2.connect(audioCtx.destination);
+      o.start();o.stop(now+1.0);
+    });
+  } else if (pianoState.sound === 'flute') {
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.1, now + 0.04);
+    gain.gain.setValueAtTime(0.1, now + 1.5);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+    // 柔和泛音
+    [2,3].forEach(function(m,i){
+      const o=audioCtx.createOscillator(), g2=audioCtx.createGain();
+      o.type='sine'; o.frequency.value=freq*m;
+      g2.gain.setValueAtTime(0.015/(i+1),now+0.02);
+      g2.gain.exponentialRampToValueAtTime(0.001,now+1.5);
+      o.connect(g2);g2.connect(audioCtx.destination);
+      o.start();o.stop(now+1.5);
+    });
+  } else if (pianoState.sound === 'violin') {
+    osc.type = 'sawtooth';
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.15);
+    gain.gain.setValueAtTime(0.08, now + 1.0);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+    // vibrato: 频率微调
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.setValueAtTime(freq*1.005, now+0.08);
+    osc.frequency.setValueAtTime(freq*0.995, now+0.16);
+    osc.frequency.setValueAtTime(freq, now+0.24);
+    [2,3,4].forEach(function(m,i){
+      const o=audioCtx.createOscillator(), g2=audioCtx.createGain();
+      o.type='sine'; o.frequency.value=freq*m;
+      g2.gain.setValueAtTime(0.02/(i+1),now+0.05);
+      g2.gain.exponentialRampToValueAtTime(0.001,now+1.2);
+      o.connect(g2);g2.connect(audioCtx.destination);
+      o.start();o.stop(now+1.2);
+    });
+  } else if (pianoState.sound === 'drum') {
+    // 打击乐：噪音+低频脉冲
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq*0.5, now);
+    osc.frequency.exponentialRampToValueAtTime(40, now+0.2);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now+0.25);
+    // 噪声层
+    const bufferSize=audioCtx.sampleRate*0.15;
+    const buffer=audioCtx.createBuffer(1,bufferSize,audioCtx.sampleRate);
+    const data=buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++) data[i]=(Math.random()*2-1)*Math.pow(1-i/bufferSize,3);
+    const noise=audioCtx.createBufferSource();
+    noise.buffer=buffer;
+    const ng=audioCtx.createGain();
+    ng.gain.setValueAtTime(0.05,now);
+    ng.gain.exponentialRampToValueAtTime(0.001,now+0.15);
+    noise.connect(ng);ng.connect(audioCtx.destination);
+    noise.start(now);noise.stop(now+0.15);
   } else if (pianoState.sound === 'bell') {
     osc.type = 'sine';
     gain.gain.setValueAtTime(0.1, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-    // 倍频程泛音
-    [2, 3, 4.2].forEach((mult, i) => {
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = 'sine';
-      o.frequency.value = freq * mult;
+    [2, 3, 4.2].forEach(function(mult, i) {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = freq * mult;
       g.gain.setValueAtTime(0.03 / (i + 1), now);
       g.gain.exponentialRampToValueAtTime(0.001, now + 0.5 / (i + 1));
       o.connect(g); g.connect(audioCtx.destination);
@@ -796,11 +861,8 @@ function playPianoNote(noteName, element) {
     osc.type = 'sawtooth';
     gain.gain.setValueAtTime(0.04, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    // 滤波器效果用另一个osc模拟
-    const osc2 = audioCtx.createOscillator();
-    const gain2 = audioCtx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.value = freq * 1.01; // 轻微失调产生厚重感
+    const osc2 = audioCtx.createOscillator(), gain2 = audioCtx.createGain();
+    osc2.type = 'sine'; osc2.frequency.value = freq * 1.01;
     gain2.gain.setValueAtTime(0.03, now);
     gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
     osc2.connect(gain2); gain2.connect(audioCtx.destination);

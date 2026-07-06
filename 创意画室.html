@@ -245,6 +245,11 @@
         <div class="p-name">喷漆涂鸦</div>
         <div class="p-desc">喷枪效果，做街头风格的创作</div>
       </div>
+      <div class="project-card" onclick="startProject('coloring')">
+        <div class="p-icon">🖍️</div>
+        <div class="p-name">填色乐园</div>
+        <div class="p-desc">自选颜色和笔触，给线稿上色</div>
+      </div>
     </div>
   </div>
 
@@ -363,6 +368,23 @@
     </div>
     <div class="hint-bar">💡 按住鼠标喷漆，松开停止 | 调节密度控制喷点多少 | 配合模板做街头艺术</div>
   </div>
+
+  <!-- ========== 填色乐园 ========== -->
+  <div class="screen" id="coloringScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">🖍️ 填色乐园</span>
+      <div class="color-palette" id="coloringColors"></div>
+      <div class="brush-sizes" id="coloringBrushes"></div>
+      <button class="tool-btn" onclick="newColoringTemplate()">🎲 换模板</button>
+      <button class="tool-btn danger" onclick="clearColoring()">🗑 清空</button>
+      <button class="tool-btn accent" onclick="saveCanvas('coloringCanvas')">💾 保存</button>
+    </div>
+    <div class="canvas-wrapper" style="background:#fff;">
+      <canvas id="coloringCanvas" width="560" height="500"></canvas>
+    </div>
+    <div class="hint-bar">💡 选颜色和笔触大小，在白色区域上色 | 线稿不会被覆盖 | 点击"换模板"切换图案</div>
+  </div>
 </div>
 
 <!-- 弹窗容器 -->
@@ -452,6 +474,7 @@ function startProject(type) {
   else if (type === 'mandala') startMandala();
   else if (type === 'connect') startConnect();
   else if (type === 'spray') startSpray();
+  else if (type === 'coloring') startColoring();
 }
 
 // ==================== 1. 自由涂鸦 ====================
@@ -1021,6 +1044,172 @@ function clearSpray() {
   const ctx = document.getElementById('sprayCanvas').getContext('2d');
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, 600, 450);
+}
+
+// ==================== 填色乐园 ====================
+let coloringState = null;
+
+// 线稿模板
+const COLORING_TEMPLATES = [
+  function drawButterfly(ctx, w, h) {
+    const cx=w/2, cy=h/2;
+    ctx.strokeStyle='#333';ctx.lineWidth=2;ctx.lineCap='round';
+    // 身体
+    ctx.beginPath();ctx.ellipse(cx,cy,8,50,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy-45,14,0,Math.PI*2);ctx.stroke();
+    // 触角
+    ctx.beginPath();ctx.moveTo(cx-5,cy-55);ctx.quadraticCurveTo(cx-30,cy-85,cx-35,cy-70);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+5,cy-55);ctx.quadraticCurveTo(cx+30,cy-85,cx+35,cy-70);ctx.stroke();
+    // 上翅
+    ctx.beginPath();ctx.ellipse(cx-30,cy-25,50,35,-0.3,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(cx+30,cy-25,50,35,0.3,0,Math.PI*2);ctx.stroke();
+    // 下翅
+    ctx.beginPath();ctx.ellipse(cx-25,cy+15,35,28,0.2,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(cx+25,cy+15,35,28,-0.2,0,Math.PI*2);ctx.stroke();
+    // 翅膀花纹
+    [cx-30,cy-25,40,25,-0.3],[cx+30,cy-25,40,25,0.3].forEach(function(p){
+      ctx.beginPath();ctx.ellipse(p[0],p[1],p[2],p[3],p[4],0,Math.PI*2);ctx.stroke();
+    });
+    // 眼睛
+    ctx.fillStyle='#333';ctx.beginPath();ctx.arc(cx-5,cy-47,3,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+5,cy-47,3,0,Math.PI*2);ctx.fill();
+  },
+  function drawFlower(ctx, w, h) {
+    const cx=w/2, cy=h/2-10;
+    ctx.strokeStyle='#333';ctx.lineWidth=2;
+    // 花瓣
+    for(let i=0;i<6;i++){
+      const a=(Math.PI*2/6)*i-Math.PI/2;
+      const px=cx+Math.cos(a)*50, py=cy+Math.sin(a)*50;
+      ctx.beginPath();ctx.arc(px,py,32,0,Math.PI*2);ctx.stroke();
+    }
+    // 内层花瓣
+    for(let i=0;i<6;i++){
+      const a=(Math.PI*2/6)*i-Math.PI/2+Math.PI/6;
+      const px=cx+Math.cos(a)*28, py=cy+Math.sin(a)*28;
+      ctx.beginPath();ctx.arc(px,py,20,0,Math.PI*2);ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(cx,cy,18,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,8,0,Math.PI*2);ctx.stroke();
+    // 茎
+    ctx.beginPath();ctx.moveTo(cx,cy+55);ctx.quadraticCurveTo(cx+15,cy+100,cx+10,cy+130);ctx.stroke();
+    // 叶子
+    ctx.beginPath();ctx.ellipse(cx+30,cy+90,25,12,-0.5,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+20,cy+85);ctx.lineTo(cx+40,cy+95);ctx.stroke();
+  },
+  function drawCat(ctx, w, h) {
+    const cx=w/2, cy=h/2-10;
+    ctx.strokeStyle='#333';ctx.lineWidth=2;
+    // 脸
+    ctx.beginPath();ctx.ellipse(cx,cy,70,65,0,0,Math.PI*2);ctx.stroke();
+    // 耳朵
+    ctx.beginPath();ctx.moveTo(cx-55,cy-35);ctx.lineTo(cx-30,cy-65);ctx.lineTo(cx-10,cy-30);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+55,cy-35);ctx.lineTo(cx+30,cy-65);ctx.lineTo(cx+10,cy-30);ctx.stroke();
+    // 内耳
+    ctx.beginPath();ctx.moveTo(cx-45,cy-35);ctx.lineTo(cx-30,cy-55);ctx.lineTo(cx-18,cy-32);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+45,cy-35);ctx.lineTo(cx+30,cy-55);ctx.lineTo(cx+18,cy-32);ctx.stroke();
+    // 眼睛
+    ctx.beginPath();ctx.ellipse(cx-22,cy-10,12,16,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(cx+22,cy-10,12,16,0,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#333';ctx.beginPath();ctx.arc(cx-20,cy-10,6,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(cx+24,cy-10,6,0,Math.PI*2);ctx.fill();
+    // 鼻子嘴
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx-8,cy+8);ctx.lineTo(cx-5,cy+10);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+8,cy+8);ctx.lineTo(cx+5,cy+10);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-3,cy+2);ctx.lineTo(cx+3,cy+2);ctx.stroke();
+    // 胡须
+    [['l',-1],['l',0],['l',1],['r',-1],['r',0],['r',1]].forEach(function(d){
+      var sx=d[0]==='l'?cx-35:cx+35, sy=cy-5+d[1]*8;
+      ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+(d[0]==='l'?-30:30),sy+d[1]*10);ctx.stroke();
+    });
+    // 身体
+    ctx.beginPath();ctx.ellipse(cx,cy+90,55,60,0,0,Math.PI*2);ctx.stroke();
+    // 脚
+    ctx.beginPath();ctx.ellipse(cx-30,cy+140,18,12,0,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(cx+30,cy+140,18,12,0,0,Math.PI*2);ctx.stroke();
+    // 尾巴
+    ctx.beginPath();ctx.moveTo(cx+50,cy+100);ctx.quadraticCurveTo(cx+120,cy+60,cx+80,cy+30);ctx.stroke();
+  },
+  function drawMandala(ctx,w,h){
+    const cx=w/2,cy=h/2;
+    ctx.strokeStyle='#333';ctx.lineWidth=1.5;
+    for(let ring=1;ring<=5;ring++){
+      ctx.beginPath();ctx.arc(cx,cy,ring*38,0,Math.PI*2);ctx.stroke();
+    }
+    for(let i=0;i<12;i++){
+      const a=(Math.PI*2/12)*i;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*190,cy+Math.sin(a)*190);ctx.stroke();
+    }
+    // petals
+    for(let i=0;i<12;i++){
+      const a=(Math.PI*2/12)*i-Math.PI/2;
+      const px=cx+Math.cos(a)*100, py=cy+Math.sin(a)*100;
+      ctx.beginPath();ctx.arc(px,py,22,0,Math.PI*2);ctx.stroke();
+    }
+  }
+];
+let coloringTemplateIdx = 0;
+
+function startColoring() {
+  showScreen('coloringScreen');
+  buildColorPalette('coloringColors');
+  buildBrushSizes('coloringBrushes', [3, 6, 10, 18, 30]);
+  coloringTemplateIdx = Math.floor(Math.random() * COLORING_TEMPLATES.length);
+  initColoringCanvas();
+}
+
+function newColoringTemplate() {
+  coloringTemplateIdx = (coloringTemplateIdx + 1) % COLORING_TEMPLATES.length;
+  initColoringCanvas();
+}
+
+function clearColoring() { initColoringCanvas(true); }
+
+function initColoringCanvas(keepLines) {
+  const canvas = document.getElementById('coloringCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  COLORING_TEMPLATES[coloringTemplateIdx](ctx, canvas.width, canvas.height);
+  // 存储线稿为参考图层
+  coloringState = {
+    canvas, ctx,
+    lines: ctx.getImageData(0, 0, canvas.width, canvas.height),
+    drawing: false
+  };
+
+  canvas.onmousedown = function(e) { coloringState.drawing = true; paintColoring(e); };
+  canvas.onmouseup = canvas.onmouseleave = function() { coloringState.drawing = false; };
+  canvas.onmousemove = function(e) { if (coloringState.drawing) paintColoring(e); };
+  canvas.addEventListener('touchstart', function(e) { e.preventDefault(); coloringState.drawing = true; paintColoring(e.touches[0]); });
+  canvas.addEventListener('touchend', function() { coloringState.drawing = false; });
+  canvas.addEventListener('touchmove', function(e) { e.preventDefault(); if (coloringState.drawing) paintColoring(e.touches[0]); });
+}
+
+function paintColoring(e) {
+  var s = coloringState;
+  var rect = s.canvas.getBoundingClientRect();
+  var scaleX = s.canvas.width / rect.width;
+  var scaleY = s.canvas.height / rect.height;
+  var x = (e.clientX - rect.left) * scaleX;
+  var y = (e.clientY - rect.top) * scaleY;
+
+  var size = getSelectedBrush('coloringBrushes');
+  var color = getSelectedColor('coloringColors');
+
+  // 只在白色/已上色区域绘制，保护线稿
+  var px = s.ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+  // 检查该点是不是线稿的黑色（保护线稿不被覆盖）
+  var lineData = s.lines.data;
+  var idx2 = (Math.round(y) * s.canvas.width + Math.round(x)) * 4;
+  var isLine = (idx2 >= 0 && idx2 < lineData.length) ? (lineData[idx2] < 100) : false;
+
+  s.ctx.beginPath();
+  s.ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+  s.ctx.fillStyle = color;
+  // 用 globalCompositeOperation 防止覆盖线稿
+  s.ctx.globalCompositeOperation = 'source-over';
+  s.ctx.fill();
 }
 
 // ==================== 弹窗 ====================
