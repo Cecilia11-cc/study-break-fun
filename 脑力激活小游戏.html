@@ -503,6 +503,26 @@
   .cn-quiz-opt.wrong { border-color: var(--danger); background: rgba(255,107,107,0.15); color: var(--danger); }
   .cn-explain { font-size: 12px; color: var(--text-dim); margin-top: 8px; text-align: center; min-height: 18px; }
 
+  /* === 编程挑战 === */
+  .code-display {
+    background: #0d0d1a; color: #4ecca3; border-radius: var(--radius-sm);
+    padding: 14px 16px; font-family: 'Consolas','Courier New',monospace;
+    font-size: 13px; line-height: 1.7; width: 100%; max-width: 460px;
+    white-space: pre-wrap; word-break: break-all; margin-bottom: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .code-display .kw { color: #ff6b9d; }
+  .code-display .str { color: #ffd93d; }
+  .code-display .cm { color: #666; }
+  .code-display .blank { color: #ff6b6b; text-decoration: underline; }
+  .code-input {
+    padding: 10px 14px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.1);
+    background: var(--surface2); color: var(--text); font-family: 'Consolas',monospace;
+    font-size: 15px; text-align: center; width: 100%; max-width: 300px; outline: none;
+  }
+  .code-input:focus { border-color: var(--primary); }
+  .code-level-desc { font-size: 13px; color: var(--text-dim); text-align: center; margin-bottom: 10px; }
+
   /* 响应式补充 */
   @media (max-width: 480px) {
     .game-grid { grid-template-columns: 1fr; }
@@ -588,6 +608,12 @@
         <div class="g-name">汉语言知识</div>
         <div class="g-desc">按照考纲分类的语文题库</div>
         <div class="g-best" id="bestChinese">--</div>
+      </div>
+      <div class="game-card" onclick="startGame('coding')">
+        <div class="g-icon">💻</div>
+        <div class="g-name">编程挑战</div>
+        <div class="g-desc">代码填空·调试找错·算法闯关</div>
+        <div class="g-best" id="bestCoding">--</div>
       </div>
     </div>
   </div>
@@ -762,6 +788,26 @@
       <div class="cn-explain" id="cnExplain"></div>
     </div>
   </div>
+
+  <!-- ========== 编程挑战 ========== -->
+  <div class="screen" id="codingScreen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="game-title">💻 编程挑战</span>
+      <div class="game-hud">
+        <div class="hud-item"><div class="hud-val" id="cdScore">0</div><div class="hud-label">得分</div></div>
+        <div class="hud-item"><div class="hud-val" id="cdLevel">1/15</div><div class="hud-label">关卡</div></div>
+        <div class="hud-item"><div class="hud-val" id="cdStreak">0⭐</div><div class="hud-label">连对</div></div>
+      </div>
+    </div>
+    <div class="game-area" id="codingArea">
+      <div class="code-level-desc" id="cdDesc"></div>
+      <div class="code-display" id="cdCode"></div>
+      <input type="text" class="code-input" id="cdInput" placeholder="输入答案..." autocomplete="off">
+      <button class="btn btn-primary" style="margin-top:10px;" onclick="submitCoding()">提交</button>
+      <div class="math-feedback" id="cdFeedback"></div>
+    </div>
+  </div>
 </div>
 
 <!-- 结果弹窗容器 -->
@@ -840,6 +886,7 @@ function updateMenuStats() {
   document.getElementById('bestSnake').textContent = formatBest(s.snake);
   document.getElementById('bestMathquiz').textContent = formatBest(s.mathquiz);
   document.getElementById('bestChinese').textContent = formatBest(s.chinese);
+  document.getElementById('bestCoding').textContent = formatBest(s.coding);
 }
 
 // ==================== 结果弹窗 ====================
@@ -944,6 +991,7 @@ function startGame(game) {
   else if (game === 'snake') startSnake();
   else if (game === 'mathquiz') startMathQuiz();
   else if (game === 'chinese') startChinese();
+  else if (game === 'coding') startCoding();
 }
 
 function startMemory() {
@@ -2405,6 +2453,83 @@ function endChinese() {
   addTimer(() => {
     showResult('📚', '汉语言知识完成！', `${cnState.score} 分`,
       `共 ${cnState.total} 题`, isBest, startChinese, goMenu);
+  }, 300);
+}
+
+// ==================== 游戏10：编程挑战 ====================
+var cdState = null;
+
+var CODING_PUZZLES = [
+  {desc:'Python：列表推导式', code:'# 生成 [0,4,8,12,16]\nresult = [i*4 for i in range(____)]', ans:'5', hint:'range(5)生成0-4，每个×4'},
+  {desc:'Python：字符串切片', code:'s = "Hello World"\n# 取 "World"\npart = s[____:]', ans:'6', hint:'索引6开始是W，s[6:]取到最后'},
+  {desc:'JavaScript：数组方法', code:'let arr = [1,2,3];\n// 末尾添加4\narr.____(4);', ans:'push', hint:'push()在数组末尾添加元素'},
+  {desc:'Python：字典操作', code:'d = {"a":1,"b":2}\n# 获取键列表\nkeys = list(d.____())', ans:'keys', hint:'dict.keys()返回所有键'},
+  {desc:'JavaScript：箭头函数', code:'// 两数之和\nconst add = (a,b) => _____', ans:'a+b', hint:'箭头函数隐式返回表达式结果'},
+  {desc:'Python：条件表达式', code:'# 取a和b中较大值\nm = a __ a > b else b', ans:'if', hint:'Python三元：x if condition else y'},
+  {desc:'C语言：循环', code:'// 循环10次\nfor(int i=0; i<10; ____)', ans:'i++', hint:'每次循环i自增1'},
+  {desc:'Python：Lambda', code:'# 平方函数\nsquare = lambda x: _____', ans:'x**2', hint:'lambda参数: 返回值表达式'},
+  {desc:'SQL：查询', code:'SELECT * FROM students\n____ score > 80;', ans:'WHERE', hint:'WHERE子句用于过滤条件'},
+  {desc:'JavaScript：模板字面量', code:'let name="Tom";\n// 输出 "Hi Tom"\nconsole.log(`Hi ${____}`)', ans:'name', hint:'${}内嵌变量'},
+  {desc:'Python：枚举', code:'fruits=["apple","banana"]\nfor i,f in ____(fruits):\n  print(i,f)', ans:'enumerate', hint:'enumerate同时取索引和值'},
+  {desc:'算法：二分查找', code:'# 有序列表arr中查找target\n# mid = (left+right) // ____', ans:'2', hint:'二分查找取中间索引：(left+right)//2'},
+  {desc:'Python：类型转换', code:'# 字符串转整数\nnum = ____("42")', ans:'int', hint:'int()将字符串转为整数'},
+  {desc:'JavaScript：异步', code:'// 延迟1秒后执行\nsetTimeout(() => {\n  console.log("done");\n}, ____);', ans:'1000', hint:'setTimeout的单位是毫秒，1秒=1000ms'},
+  {desc:'Python：集合', code:'a={1,2,3}; b={2,3,4}\n# 取交集\nc = a ____ b', ans:'&', hint:'&是集合交集运算符，等价于a.intersection(b)'},
+];
+
+function startCoding() {
+  showScreen('codingScreen');
+  document.getElementById('cdScore').textContent = '0';
+  document.getElementById('cdLevel').textContent = '1/15';
+  document.getElementById('cdStreak').textContent = '0⭐';
+  document.getElementById('cdFeedback').textContent = '';
+  cdState = { score: 0, level: 0, streak: 0, total: 15, puzzles: shuffleArr([...CODING_PUZZLES]) };
+  nextCoding();
+}
+
+function shuffleArr(a) { for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;} return a; }
+
+function nextCoding() {
+  if (cdState.level >= cdState.total) { endCoding(); return; }
+  cdState.level++;
+  document.getElementById('cdLevel').textContent = cdState.level+'/15';
+  document.getElementById('cdFeedback').textContent = '';
+  document.getElementById('cdInput').value = '';
+  document.getElementById('cdInput').focus();
+  var p = cdState.puzzles[cdState.level - 1];
+  cdState.currentPuzzle = p;
+  document.getElementById('cdDesc').textContent = '🔧 ' + p.desc;
+  document.getElementById('cdCode').innerHTML = p.code.replace(/____/g,'<span class="blank">____</span>')
+    .replace(/(#.*)/g,'<span class="cm">$1</span>')
+    .replace(/(".*?")/g,'<span class="str">$1</span>')
+    .replace(/\b(def|for|in|if|else|return|let|const|function|console|log|import|from|class|new|SELECT|FROM|WHERE)\b/g,'<span class="kw">$1</span>');
+}
+
+function submitCoding() {
+  if (!cdState || !cdState.currentPuzzle) return;
+  var input = document.getElementById('cdInput').value.trim();
+  var correct = cdState.currentPuzzle.ans;
+  if (input === correct || input.toLowerCase() === correct.toLowerCase()) {
+    cdState.score += 10; cdState.streak++;
+    document.getElementById('cdScore').textContent = cdState.score;
+    document.getElementById('cdStreak').textContent = cdState.streak+'⭐';
+    document.getElementById('cdFeedback').innerHTML = '<span style="color:#4ecca3">✅ 正确！' + cdState.currentPuzzle.hint + '</span>';
+    sfxCorrect(); if (cdState.streak % 5 === 0) sfxCombo();
+    var s2 = loadStats(); if (cdState.streak > (s2.maxCombo||0)) { s2.maxCombo=cdState.streak; saveStats(s2); }
+  } else {
+    cdState.streak = 0;
+    document.getElementById('cdStreak').textContent = '0⭐';
+    document.getElementById('cdFeedback').innerHTML = '<span style="color:#ff6b6b">❌ 答案是：<b>' + correct + '</b> — ' + cdState.currentPuzzle.hint + '</span>';
+    sfxWrong();
+  }
+  addTimer(nextCoding, 1000);
+}
+
+function endCoding() {
+  var isBest = setBest('coding', cdState.score);
+  addPlay(); updateMenuStats();
+  addTimer(function() {
+    showResult('💻', '编程挑战完成！', cdState.score+' 分', '共 '+cdState.total+' 关', isBest, startCoding, goMenu);
   }, 300);
 }
 

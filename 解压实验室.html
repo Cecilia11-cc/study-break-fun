@@ -180,6 +180,41 @@
     0% { transform: translateY(0); opacity: 1; }
     100% { transform: translateY(-60px); opacity: 0; }
   }
+
+  /* === 花卉种植 === */
+  .garden-pots { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; max-width: 420px; }
+  @media (max-width: 400px) { .garden-pots { grid-template-columns: repeat(2,1fr); } }
+  .garden-pot {
+    background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius-sm); padding: 10px; text-align: center;
+    cursor: pointer; transition: 0.2s; min-height: 100px; display: flex;
+    flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  }
+  .garden-pot:hover { border-color: rgba(78,204,163,0.4); background: rgba(78,204,163,0.05); }
+  .garden-pot .gp-emoji { font-size: 36px; transition: 0.3s; }
+  .garden-pot .gp-name { font-size: 11px; color: var(--text-dim); }
+  .garden-pot .gp-stage { font-size: 10px; color: var(--warning); }
+  .garden-pot .gp-bars { width: 100%; margin-top: 4px; }
+  .gp-bar { height: 3px; border-radius: 2px; margin: 2px 0; transition: width 0.5s; }
+  .gp-bar.water { background: #3498db; }
+  .gp-bar.fert { background: #e67e22; }
+  .garden-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+  .garden-btn {
+    padding: 8px 16px; border-radius: 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.15); background: transparent;
+    color: var(--text); font-family: inherit; transition: 0.2s;
+  }
+  .garden-btn:hover { background: rgba(255,255,255,0.08); }
+  .garden-btn.water-btn { border-color: rgba(52,152,219,0.4); color: #5dade2; }
+  .garden-btn.fert-btn { border-color: rgba(230,126,34,0.4); color: #f0a04b; }
+  .garden-seed-select { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+  .garden-seed-opt {
+    padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-dim);
+    font-family: inherit; transition: 0.2s;
+  }
+  .garden-seed-opt:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+  .garden-seed-opt.active { background: rgba(78,204,163,0.2); color: var(--success); border-color: var(--success); }
 </style>
 </head>
 <body>
@@ -212,6 +247,11 @@
         <div class="t-icon">🎹</div>
         <div class="t-name">迷你钢琴</div>
         <div class="t-desc">弹几个音符放松心情</div>
+      </div>
+      <div class="toy-card" onclick="startToy('garden')">
+        <div class="t-icon">🌷</div>
+        <div class="t-name">花卉种植</div>
+        <div class="t-desc">100种花卉·浇花施肥·生长模拟</div>
       </div>
     </div>
   </div>
@@ -288,6 +328,27 @@
     </div>
     <div class="hint-bar">💡 试试弹一首简单的旋律：C D E F G 就是 do re mi fa sol</div>
   </div>
+
+  <!-- ========== 花卉种植 ========== -->
+  <div class="screen" id="gardenScreen">
+    <div class="toolbar">
+      <button class="back-btn" onclick="goMenu()">←</button>
+      <span class="title">🌷 花卉种植</span>
+      <span style="font-size:12px;color:var(--text-dim)">已收集: <b style="color:var(--success)" id="gardenCollected">0</b>/100</span>
+      <button class="tool-btn" onclick="resetGarden()">🔄 重置</button>
+    </div>
+    <div class="game-area" id="gardenArea">
+      <div class="garden-pots" id="gardenPots"></div>
+      <div class="garden-actions">
+        <button class="garden-btn water-btn" onclick="gardenAction('water')">💧 浇水</button>
+        <button class="garden-btn fert-btn" onclick="gardenAction('fert')">🧪 施肥</button>
+        <button class="garden-btn" onclick="gardenAction('harvest')">✂️ 收获</button>
+        <button class="garden-btn" onclick="gardenAction('plant')" style="color:var(--success);border-color:rgba(78,204,163,0.4);">🌱 种植</button>
+      </div>
+      <div class="garden-seed-select" id="gardenSeedSelect"></div>
+      <div class="hint-bar" style="margin-top:8px;">💡 点击花盆选中 → 浇水/施肥/种植/收获 | 每30秒=1天 | 不浇水会枯萎</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -318,6 +379,7 @@ function startToy(type) {
   else if (type === 'firework') startFirework();
   else if (type === 'fluid') startFluid();
   else if (type === 'piano') startPiano();
+  else if (type === 'garden') startGarden();
 }
 
 // ==================== 1. 泡泡纸 ====================
@@ -885,6 +947,138 @@ function playPianoNote(noteName, element) {
   noteEl.style.zIndex = '200';
   document.body.appendChild(noteEl);
   setTimeout(() => noteEl.remove(), 1000);
+}
+
+// ==================== 花卉种植 ====================
+var FLOWERS = [
+  '🌹玫瑰|3|2|红','🌻向日葵|4|1|黄','🌷郁金香|3|2|红','🌸樱花|5|1|粉','🌺芙蓉|4|3|红',
+  '💐花束|2|1|彩','🌼雏菊|2|2|白','🌾稻花|2|1|金','💮白花|1|1|白','🏵玫瑰|3|2|橙',
+  '🌸梅花|6|1|粉','🌷水仙|3|2|黄','🌻菊花|4|1|金','🌺牡丹|5|3|红','🌹月季|3|2|红',
+  '💐百合|2|1|白','🌼蒲公英|1|1|黄','🌸桃花|5|2|粉','🌷风信子|3|2|紫','🌻金盏花|4|1|橙',
+  '🌺山茶|5|3|红','🌹蔷薇|3|2|粉','💐康乃馨|2|1|红','🌼铃兰|2|2|白','🌸杏花|5|1|粉',
+  '🌷鸢尾|3|2|蓝','🌻大丽花|4|1|红','🌺杜鹃|5|3|粉','🌹茉莉|3|2|白','💐栀子|2|1|白',
+  '🌼雏菊|1|2|白','🌸海棠|5|2|红','🌷番红花|3|2|紫','🌻万寿菊|4|1|金','🌺紫荆|5|3|紫',
+  '🌹含笑|3|2|粉','💐木槿|2|1|粉','🌼报春|2|2|黄','🌸丁香|5|1|紫','🌷美人蕉|3|2|红',
+  '🌻矢车菊|4|1|蓝','🌺罂粟|5|3|红','🌹紫藤|3|2|紫','💐玉兰|2|1|白','🌼连翘|1|2|黄',
+  '🌸石榴花|5|2|红','🌷睡莲|3|2|粉','🌻薰衣草|4|1|紫','🌺夹竹桃|5|3|粉','🌹木香|3|2|黄',
+  '💐芍药|2|1|红','🌼酢浆|2|2|粉','🌸琼花|5|1|白','🌷仙客来|3|2|红','🌻雏菊|4|1|白',
+  '🌺三角梅|5|3|红','🌹瑞香|3|2|粉','💐菖蒲|2|1|紫','🌼鸢萝|1|2|红','🌸紫薇|5|2|紫',
+  '🌷马蹄莲|3|2|白','🌻鸡冠花|4|1|红','🌺一串红|5|3|红','🌹龙船花|3|2|红','💐桔梗|2|1|蓝',
+  '🌼石竹|2|2|粉','🌸木棉|5|1|红','🌷勿忘我|3|2|蓝','🌻波斯菊|4|1|粉','🌺绣球|5|3|蓝',
+  '🌹天竺葵|3|2|红','💐鹤望兰|2|1|橙','🌼蓝雪花|1|2|蓝','🌸凤凰木|5|2|红','🌷洋桔梗|3|2|紫',
+  '🌻金光菊|4|1|黄','🌺倒挂金钟|5|3|紫','🌹晚香玉|3|2|白','💐香雪兰|2|1|白','🌼金鱼草|2|2|橙',
+  '🌸蓝花楹|5|1|紫','🌷雪花莲|3|2|白','🌻黑眼菊|4|1|金','🌺蜡梅|5|3|黄','🌹白兰|3|2|白',
+  '💐蝴蝶兰|2|1|紫','🌼孔雀草|1|2|橙','🌸无忧花|5|2|金','🌷豹皮花|3|2|斑','🌻硫华菊|4|1|橙',
+  '🌺朱顶红|5|3|红','🌹素馨|3|2|白','💐石蒜|2|1|红','🌼点地梅|2|2|白','🌸合欢|5|1|粉',
+  '🌷葡萄风信子|3|2|蓝','🌻堆心菊|4|1|黄','🌺金苞花|5|3|金','🌹络石|3|2|白','💐香豌豆|2|1|粉',
+];
+var gardenState = null;
+
+function startGarden() {
+  showScreen('gardenScreen');
+  var s = loadStats();
+  gardenState = {
+    pots: new Array(6).fill(null),
+    selectedPot: -1,
+    selectedSeed: 0,
+    collected: (s.gardenFlowers ? s.gardenFlowers.split(',') : []),
+    tickTimer: null
+  };
+  renderGarden();
+  updateGardenCollected();
+  gardenState.tickTimer = addInterval(gardenTick, 30000); // 30s = 1 game day
+}
+
+function resetGarden() {
+  if (gardenState.tickTimer) clearTimer(gardenState.tickTimer);
+  gardenState.pots = new Array(6).fill(null);
+  gardenState.selectedPot = -1;
+  gardenState.tickTimer = addInterval(gardenTick, 30000);
+  renderGarden();
+}
+
+function gardenTick() {
+  var gs = gardenState;
+  if (!gs || currentGame !== 'garden') return;
+  for (var i = 0; i < gs.pots.length; i++) {
+    var p = gs.pots[i];
+    if (!p) continue;
+    p.water = Math.max(0, p.water - 1);
+    p.fert = Math.max(0, p.fert - 1);
+    if (p.water <= 0 && p.stage > 0 && p.stage < 5) { p.stage = 5; p.wilted = true; } // wilt
+    else if (p.water > 0 && p.stage < 4) p.stage = Math.min(4, p.stage + 1); // grow
+  }
+  renderGarden();
+}
+
+function renderGarden() {
+  var gs = gardenState;
+  var potsEl = document.getElementById('gardenPots');
+  var stages = ['🌰','🌱','🌿','🌷','🌸','🥀'];
+  var stageNames = ['种子','萌芽','幼苗','含苞','盛开','枯萎'];
+  potsEl.innerHTML = '';
+  for (var i = 0; i < gs.pots.length; i++) {
+    var p = gs.pots[i];
+    var sel = i === gs.selectedPot ? 'border-color:var(--success);box-shadow:0 0 12px rgba(78,204,163,0.3);' : '';
+    if (!p) {
+      potsEl.innerHTML += '<div class="garden-pot" style="'+sel+'" onclick="selectGardenPot('+i+')"><div class="gp-emoji">🪴</div><div class="gp-name">空地</div></div>';
+    } else {
+      var fdata = FLOWERS[p.flowerIdx].split('|');
+      potsEl.innerHTML +=
+        '<div class="garden-pot" style="'+sel+'" onclick="selectGardenPot('+i+')">' +
+          '<div class="gp-emoji">' + stages[p.stage] + '</div>' +
+          '<div class="gp-name">' + fdata[0] + '</div>' +
+          '<div class="gp-stage">' + stageNames[p.stage] + '</div>' +
+          '<div class="gp-bars">' +
+            '<div class="gp-bar water" style="width:'+(p.water/10*100)+'%"></div>' +
+            '<div class="gp-bar fert" style="width:'+(p.fert/5*100)+'%"></div>' +
+          '</div>' +
+        '</div>';
+    }
+  }
+  // Seed selector
+  var seedsEl = document.getElementById('gardenSeedSelect');
+  seedsEl.innerHTML = '';
+  for (var j = 0; j < 12; j++) {
+    var fd = FLOWERS[j].split('|');
+    seedsEl.innerHTML += '<button class="garden-seed-opt'+(j===gs.selectedSeed?' active':'')+
+      '" onclick="selectGardenSeed('+j+')">'+fd[0]+'</button>';
+  }
+}
+
+function selectGardenPot(i) { gardenState.selectedPot = i; renderGarden(); }
+function selectGardenSeed(i) { gardenState.selectedSeed = i; renderGarden(); }
+
+function gardenAction(action) {
+  var gs = gardenState;
+  if (gs.selectedPot < 0) { return; }
+  var p = gs.pots[gs.selectedPot];
+
+  if (action === 'plant') {
+    if (p && p.stage >= 0) return;
+    var fdata = FLOWERS[gs.selectedSeed].split('|');
+    gs.pots[gs.selectedPot] = { flowerIdx: gs.selectedSeed, stage: 0, water: 10, fert: 5, wilted: false };
+    sfxClick();
+  } else if (!p) return;
+  else if (action === 'water') { p.water = Math.min(10, p.water + 4); sfxClick(); }
+  else if (action === 'fert') { p.fert = Math.min(5, p.fert + 2); sfxClick(); }
+  else if (action === 'harvest') {
+    if (p.stage >= 4 && !p.wilted) {
+      var fd = FLOWERS[p.flowerIdx].split('|');
+      if (gs.collected.indexOf(fd[0]) < 0) {
+        gs.collected.push(fd[0]);
+        var ss = loadStats(); ss.gardenFlowers = gs.collected.join(','); saveStats(ss);
+        updateGardenCollected();
+      }
+      gs.pots[gs.selectedPot] = null;
+      sfxCorrect();
+    } else { sfxWrong(); }
+  }
+  renderGarden();
+}
+
+function updateGardenCollected() {
+  document.getElementById('gardenCollected').textContent = gardenState.collected.length;
 }
 
 // ==================== 键盘快捷键 ====================
