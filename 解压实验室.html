@@ -253,9 +253,9 @@
         <div class="t-name">迷你钢琴</div>
         <div class="t-desc">弹几个音符放松心情</div>
       </div>
-      <div class="toy-card" onclick="startToy('garden')">
+      <div class="toy-card" onclick="startToy('garden')" style="position:relative;">
         <div class="t-icon">🌷</div>
-        <div class="t-name">花卉种植</div>
+        <div class="t-name">花卉种植 <span style="font-size:10px;background:#ff6b6b;color:#fff;padding:1px 6px;border-radius:6px;vertical-align:middle;">开发中</span></div>
         <div class="t-desc">100种花卉·浇花施肥·生长模拟</div>
       </div>
     </div>
@@ -338,8 +338,7 @@
   <div class="screen" id="gardenScreen">
     <div class="toolbar">
       <button class="back-btn" onclick="goMenu()">←</button>
-      <span class="title">🌷 花卉种植</span>
-      <span style="font-size:12px;color:var(--text-dim)">已收集: <b style="color:var(--success)" id="gardenCollected">0</b>/100</span>
+      <span class="title">🌷 花卉种植 <span style="font-size:10px;background:#ff6b6b;color:#fff;padding:2px 8px;border-radius:8px;">🚧 开发中</span></span>
       <button class="tool-btn" onclick="resetGarden()">🔄 重置</button>
     </div>
     <div class="game-area" id="gardenArea">
