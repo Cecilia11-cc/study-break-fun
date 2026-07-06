@@ -977,7 +977,7 @@ var FLOWERS = [
   '葡萄风信子|#5c6bc0|8|#bbdefb|1|剑形','堆心菊|#ffa726|12|#5d4037|0|匙形','金苞花|#ffc107|8|#fff|0|剑形','络石|#fff|5|#ffeb3b|0|椭圆','香豌豆|#f48fb1|3|#e91e63|0|心形',
 ];
 var gardenState = null;
-var POT_W = 130, POT_H = 120;
+var POT_W = 140, POT_H = 130;
 
 function startGarden() {
   showScreen('gardenScreen');
@@ -1003,7 +1003,7 @@ function resetGarden() {
 
 function gardenTick() {
   var gs = gardenState;
-  if (!gs || currentGame !== 'garden') return;
+  if (!gs) return;
   for (var i = 0; i < gs.pots.length; i++) {
     var p = gs.pots[i]; if (!p) continue;
     p.water = Math.max(0, p.water - 1);
@@ -1015,127 +1015,128 @@ function gardenTick() {
 }
 
 function drawFlower(ctx, w, h, flowerIdx, stage) {
+  if (flowerIdx >= FLOWERS.length) return;
   var f = FLOWERS[flowerIdx].split('|');
-  var petalColor = f[1], petalCount = parseInt(f[2]), centerColor = f[3];
-  var petalShape = parseInt(f[4]); // 0=round, 1=pointed, 2=layered
+  if (f.length < 6) return;
+  var petalColor = f[1], petalCount = parseInt(f[2]) || 6, centerColor = f[3];
+  var petalShape = parseInt(f[4]) || 0;
   ctx.clearRect(0, 0, w, h);
 
   // 土壤
-  ctx.fillStyle = '#3e2723'; ctx.fillRect(10, h-16, w-20, 16);
-  ctx.fillStyle = '#5d4037'; ctx.fillRect(10, h-16, w-20, 6);
+  ctx.fillStyle = '#5d4037'; ctx.fillRect(8, h-18, w-16, 18);
+  ctx.fillStyle = '#795548'; ctx.fillRect(8, h-18, w-16, 5);
   // 花盆
-  ctx.fillStyle = '#8d6e63';
-  ctx.beginPath(); ctx.moveTo(18, h-16); ctx.lineTo(12, h-2); ctx.lineTo(w-12, h-2); ctx.lineTo(w-18, h-16); ctx.fill();
+  ctx.fillStyle = '#a1887f';
+  ctx.beginPath(); ctx.moveTo(16, h-18); ctx.lineTo(10, h-3); ctx.lineTo(w-10, h-3); ctx.lineTo(w-16, h-18); ctx.fill();
+  ctx.strokeStyle = '#8d6e63'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(14, h-18); ctx.lineTo(8, h-3); ctx.lineTo(w-8, h-3); ctx.lineTo(w-14, h-18); ctx.closePath(); ctx.stroke();
 
   if (stage === 0) {
-    // 种子：土里一个小圆点
-    ctx.fillStyle = '#795548'; ctx.beginPath(); ctx.arc(w/2, h-24, 4, 0, Math.PI*2); ctx.fill();
-  } else if (stage >= 1) {
-    var stemH = 20 + stage * 15;
-    var stemY = h - 20 - stemH;
-    var sway = Math.sin(Date.now()/2000 + flowerIdx) * 2; // 微风吹动
-    var stemX = w/2 + sway;
+    // 种子
+    ctx.fillStyle = '#8d6e63'; ctx.beginPath(); ctx.arc(w/2, h-24, 5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#a1887f'; ctx.beginPath(); ctx.arc(w/2, h-24, 2.5, 0, Math.PI*2); ctx.fill();
+    return;
+  }
 
-    // 茎
-    ctx.strokeStyle = stage >= 5 ? '#8d6e63' : '#4caf50';
-    ctx.lineWidth = stage >= 5 ? 2.5 : 2;
-    ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(w/2, h-18);
-    ctx.quadraticCurveTo(stemX, h-18-stemH*0.5, stemX, stemY);
-    ctx.stroke();
+  // Stage 1-5
+  var stemH = 20 + stage * 16;
+  var stemY = h - 22 - stemH;
+  var stemX = w/2;
 
-    if (stage >= 2) {
-      // 叶子
-      var leafColor = stage >= 5 ? '#a1887f' : '#66bb6a';
-      var leafW = 14 + stage * 3;
-      for (var li = 0; li < (stage >= 3 ? 2 : 1); li++) {
-        var ly = h - 18 - stemH * (0.35 + li * 0.3);
-        var lx = li === 0 ? stemX - leafW * 0.6 : stemX + leafW * 0.5;
-        ctx.fillStyle = leafColor;
-        ctx.beginPath(); ctx.ellipse(lx, ly, leafW, leafW*0.4, li*0.5-0.2, 0, Math.PI*2); ctx.fill();
-        // 叶脉
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 0.6;
-        ctx.beginPath(); ctx.moveTo(lx-leafW*0.3, ly); ctx.lineTo(lx+leafW*0.4, ly); ctx.stroke();
+  // 茎
+  ctx.strokeStyle = stage >= 5 ? '#a0886e' : '#4caf50';
+  ctx.lineWidth = stage >= 5 ? 2.5 : 2.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(w/2, h-20);
+  ctx.lineTo(stemX, stemY);
+  ctx.stroke();
+
+  // 叶子
+  if (stage >= 2) {
+    var leafColor = stage >= 5 ? '#b8a088' : '#66bb6a';
+    var leafW = 16 + stage * 3;
+    var leafCount = stage >= 3 ? 2 : 1;
+    for (var li = 0; li < leafCount; li++) {
+      var ly = h - 22 - stemH * (0.4 + li * 0.35);
+      var dir = li % 2 === 0 ? -1 : 1;
+      var lx = stemX + dir * leafW * 0.4;
+      ctx.fillStyle = leafColor;
+      ctx.beginPath(); ctx.ellipse(lx, ly, leafW, leafW * 0.35, dir * 0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(lx - dir * leafW * 0.3, ly);
+      ctx.lineTo(lx + dir * leafW * 0.5, ly); ctx.stroke();
+    }
+  }
+
+  // 花朵 (stage 3-4-5)
+  if (stage >= 3) {
+    var flowerR = stage >= 4 ? 18 + petalCount * 0.4 : 8;
+    var cx = stemX, cy = stemY;
+    var alpha = stage >= 5 ? 0.4 : 1;
+    ctx.globalAlpha = alpha;
+
+    // 花萼
+    ctx.fillStyle = stage >= 5 ? '#9b8b7a' : '#388e3c';
+    ctx.beginPath(); ctx.ellipse(cx, cy + flowerR * 0.15, flowerR * 0.55, 3, 0, 0, Math.PI * 2); ctx.fill();
+
+    if (petalShape === 0) {
+      // Round petals
+      var petalR = Math.max(5, flowerR * 0.42);
+      for (var pi = 0; pi < petalCount; pi++) {
+        var angle = (Math.PI * 2 / petalCount) * pi - Math.PI / 2;
+        var px = cx + Math.cos(angle) * flowerR * 0.5;
+        var py = cy + Math.sin(angle) * flowerR * 0.5;
+        ctx.fillStyle = petalColor;
+        ctx.beginPath(); ctx.arc(px, py, petalR, 0, Math.PI * 2); ctx.fill();
+        // petal outline
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 0.8;
+        ctx.beginPath(); ctx.arc(px, py, petalR, 0, Math.PI * 2); ctx.stroke();
+      }
+    } else if (petalShape === 1) {
+      // Pointed petals
+      for (var pi = 0; pi < petalCount; pi++) {
+        var angle = (Math.PI * 2 / petalCount) * pi - Math.PI / 2;
+        ctx.fillStyle = petalColor;
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        var tipX = cx + Math.cos(angle) * flowerR;
+        var tipY = cy + Math.sin(angle) * flowerR;
+        ctx.quadraticCurveTo(cx + Math.cos(angle-0.45)*flowerR*0.55, cy + Math.sin(angle-0.45)*flowerR*0.55, tipX, tipY);
+        ctx.quadraticCurveTo(cx + Math.cos(angle+0.45)*flowerR*0.55, cy + Math.sin(angle+0.45)*flowerR*0.55, cx, cy);
+        ctx.fill();
+      }
+    } else {
+      // Layered petals
+      for (var layer = 0; layer < 2; layer++) {
+        var r = flowerR * (0.55 + layer * 0.3);
+        var count = Math.max(5, petalCount - layer * 3);
+        for (var pi = 0; pi < count; pi++) {
+          var angle = (Math.PI * 2 / count) * pi + layer * 0.25 - Math.PI / 2;
+          var px2 = cx + Math.cos(angle) * r * 0.45;
+          var py2 = cy + Math.sin(angle) * r * 0.45;
+          ctx.fillStyle = layer === 0 ? petalColor : lightenColor(petalColor, 25);
+          ctx.beginPath(); ctx.arc(px2, py2, r * 0.4, 0, Math.PI * 2); ctx.fill();
+        }
       }
     }
 
-    if (stage >= 3) {
-      // 花朵
-      var flowerR = stage >= 4 ? 16 + petalCount * 0.3 : 7;
-      var cx = stemX, cy = stemY;
-      var alpha = stage >= 5 ? 0.35 : 1;
-
-      ctx.globalAlpha = alpha;
-
-      if (petalShape === 0) {
-        // 圆形花瓣
-        for (var pi = 0; pi < petalCount; pi++) {
-          var angle = (Math.PI * 2 / petalCount) * pi - Math.PI / 2;
-          var px = cx + Math.cos(angle) * flowerR * 0.55;
-          var py = cy + Math.sin(angle) * flowerR * 0.55;
-          ctx.fillStyle = petalColor;
-          ctx.beginPath(); ctx.arc(px, py, flowerR * 0.5, 0, Math.PI * 2); ctx.fill();
-        }
-      } else if (petalShape === 1) {
-        // 尖形花瓣 (郁金香/风信子)
-        for (var pi = 0; pi < petalCount; pi++) {
-          var angle = (Math.PI * 2 / petalCount) * pi - Math.PI / 2;
-          ctx.fillStyle = petalColor;
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.quadraticCurveTo(
-            cx + Math.cos(angle - 0.4) * flowerR * 0.6, cy + Math.sin(angle - 0.4) * flowerR * 0.6,
-            cx + Math.cos(angle) * flowerR, cy + Math.sin(angle) * flowerR
-          );
-          ctx.quadraticCurveTo(
-            cx + Math.cos(angle + 0.4) * flowerR * 0.6, cy + Math.sin(angle + 0.4) * flowerR * 0.6,
-            cx, cy
-          );
-          ctx.fill();
-        }
-      } else {
-        // 层叠花瓣 (玫瑰/牡丹)
-        for (var layer = 2; layer >= 1; layer--) {
-          var r = flowerR * (0.5 + layer * 0.25);
-          var count = Math.floor(petalCount / layer);
-          for (var pi = 0; pi < count; pi++) {
-            var angle = (Math.PI * 2 / count) * pi + layer * 0.3 - Math.PI / 2;
-            var px2 = cx + Math.cos(angle) * r * 0.4;
-            var py2 = cy + Math.sin(angle) * r * 0.4;
-            ctx.fillStyle = layer === 1 ? lightenColor(petalColor, 30) : petalColor;
-            ctx.beginPath(); ctx.arc(px2, py2, r * 0.45, 0, Math.PI * 2); ctx.fill();
-          }
-        }
-      }
-
-      // 花心
-      if (stage >= 4) {
-        ctx.fillStyle = centerColor;
-        ctx.beginPath(); ctx.arc(cx, cy, flowerR * 0.25, 0, Math.PI * 2); ctx.fill();
-        // 花粉点
-        ctx.fillStyle = 'rgba(255,255,200,0.5)';
-        for (var di = 0; di < 4; di++) {
-          var da = Math.random() * Math.PI * 2;
-          ctx.beginPath(); ctx.arc(cx + Math.cos(da) * flowerR * 0.13, cy + Math.sin(da) * flowerR * 0.13, 1.5, 0, Math.PI * 2); ctx.fill();
-        }
-      }
-
-      // 花萼
-      ctx.fillStyle = stage >= 5 ? '#8d6e63' : '#388e3c';
-      ctx.beginPath(); ctx.ellipse(cx, cy + flowerR * 0.15, flowerR * 0.5, 3, 0, 0, Math.PI * 2); ctx.fill();
-
-      ctx.globalAlpha = 1;
+    // Flower center
+    if (stage >= 4) {
+      ctx.fillStyle = centerColor;
+      ctx.beginPath(); ctx.arc(cx, cy, flowerR * 0.22, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 0.6;
+      ctx.beginPath(); ctx.arc(cx, cy, flowerR * 0.22, 0, Math.PI * 2); ctx.stroke();
     }
 
-    if (stage >= 5) {
-      // 枯萎特效：棕色滤镜
-      ctx.fillStyle = 'rgba(139,119,101,0.25)';
-      ctx.fillRect(0, 0, w, h);
-      // 落叶
-      ctx.fillStyle = '#a1887f';
-      ctx.beginPath(); ctx.arc(w/2 + 20, h-40, 3, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(w/2 - 15, h-30, 2.5, 0, Math.PI*2); ctx.fill();
-    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Wilt effect
+  if (stage >= 5) {
+    ctx.fillStyle = 'rgba(156,130,108,0.3)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#b8a088';
+    ctx.beginPath(); ctx.arc(w/2 + 18, h - 42, 3.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(w/2 - 22, h - 35, 3, 0, Math.PI*2); ctx.fill();
   }
 }
 
@@ -1166,14 +1167,26 @@ function renderGarden() {
 
     var ctx = cvs.getContext('2d');
     if (!p) {
-      // 空地
-      ctx.fillStyle = '#5d4037'; ctx.fillRect(10, POT_H-16, POT_W-20, 16);
-      ctx.fillStyle = '#8d6e63';
-      ctx.beginPath(); ctx.moveTo(18, POT_H-16); ctx.lineTo(12, POT_H-2); ctx.lineTo(POT_W-12, POT_H-2); ctx.lineTo(POT_W-18, POT_H-16); ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('🪴', POT_W/2, POT_H-28);
+      // 空地：画花盆+松软土壤
+      ctx.fillStyle = '#5d4037'; ctx.fillRect(8, POT_H-18, POT_W-16, 18);
+      ctx.fillStyle = '#795548'; ctx.fillRect(8, POT_H-18, POT_W-16, 5);
+      // 花盆身
+      ctx.fillStyle = '#a1887f';
+      ctx.beginPath(); ctx.moveTo(16, POT_H-18); ctx.lineTo(10, POT_H-3); ctx.lineTo(POT_W-10, POT_H-3); ctx.lineTo(POT_W-16, POT_H-18); ctx.fill();
+      // 花盆边
+      ctx.strokeStyle = '#8d6e63'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(14, POT_H-18); ctx.lineTo(8, POT_H-3); ctx.lineTo(POT_W-8, POT_H-3); ctx.lineTo(POT_W-14, POT_H-18); ctx.closePath(); ctx.stroke();
+      // 加号图标
+      ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('+', POT_W/2, POT_H/2-5);
+      ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.font = '10px sans-serif';
+      ctx.fillText('空地', POT_W/2, POT_H/2+14);
     } else {
-      drawFlower(ctx, POT_W, POT_H, p.flowerIdx, p.stage);
+      try { drawFlower(ctx, POT_W, POT_H, p.flowerIdx, p.stage); }
+      catch(e) {
+        ctx.fillStyle = '#ff6b6b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('绘制错误', POT_W/2, POT_H/2);
+      }
     }
 
     if (p) {
