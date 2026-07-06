@@ -182,39 +182,44 @@
   }
 
   /* === 花卉种植 === */
-  .garden-pots { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; max-width: 420px; }
+  .garden-pots { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; max-width: 480px; }
   @media (max-width: 400px) { .garden-pots { grid-template-columns: repeat(2,1fr); } }
   .garden-pot {
-    background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.08);
-    border-radius: var(--radius-sm); padding: 10px; text-align: center;
-    cursor: pointer; transition: 0.2s; min-height: 100px; display: flex;
-    flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: rgba(255,255,255,0.02); border: 2px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-sm); padding: 6px; text-align: center;
+    cursor: pointer; transition: 0.2s; display: flex;
+    flex-direction: column; align-items: center; gap: 2px;
   }
-  .garden-pot:hover { border-color: rgba(78,204,163,0.4); background: rgba(78,204,163,0.05); }
-  .garden-pot .gp-emoji { font-size: 36px; transition: 0.3s; }
-  .garden-pot .gp-name { font-size: 11px; color: var(--text-dim); }
-  .garden-pot .gp-stage { font-size: 10px; color: var(--warning); }
-  .garden-pot .gp-bars { width: 100%; margin-top: 4px; }
-  .gp-bar { height: 3px; border-radius: 2px; margin: 2px 0; transition: width 0.5s; }
+  .garden-pot:hover { border-color: rgba(78,204,163,0.4); background: rgba(78,204,163,0.04); }
+  .garden-pot.selected { border-color: var(--success); box-shadow: 0 0 14px rgba(78,204,163,0.25); }
+  .garden-pot canvas { display: block; border-radius: 4px; }
+  .garden-pot .gp-name { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .garden-pot .gp-bars { width: 100%; }
+  .gp-bar { height: 2px; border-radius: 1px; margin: 1px 0; transition: width 0.5s; }
   .gp-bar.water { background: #3498db; }
   .gp-bar.fert { background: #e67e22; }
-  .garden-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+  .garden-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
   .garden-btn {
-    padding: 8px 16px; border-radius: 18px; font-size: 13px; font-weight: 600;
-    cursor: pointer; border: 1px solid rgba(255,255,255,0.15); background: transparent;
+    padding: 7px 14px; border-radius: 16px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.12); background: transparent;
     color: var(--text); font-family: inherit; transition: 0.2s;
   }
-  .garden-btn:hover { background: rgba(255,255,255,0.08); }
-  .garden-btn.water-btn { border-color: rgba(52,152,219,0.4); color: #5dade2; }
-  .garden-btn.fert-btn { border-color: rgba(230,126,34,0.4); color: #f0a04b; }
-  .garden-seed-select { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
-  .garden-seed-opt {
-    padding: 5px 10px; border-radius: 12px; font-size: 11px; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-dim);
-    font-family: inherit; transition: 0.2s;
+  .garden-btn:hover { background: rgba(255,255,255,0.06); }
+  .garden-btn.water-btn { border-color: rgba(52,152,219,0.35); color: #5dade2; }
+  .garden-btn.fert-btn { border-color: rgba(230,126,34,0.35); color: #f0a04b; }
+  .garden-seed-select { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+  .garden-seed-dot {
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+    transition: 0.2s; flex-shrink: 0; position: relative;
   }
-  .garden-seed-opt:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
-  .garden-seed-opt.active { background: rgba(78,204,163,0.2); color: var(--success); border-color: var(--success); }
+  .garden-seed-dot:hover { transform: scale(1.2); }
+  .garden-seed-dot.active { border-color: #fff; box-shadow: 0 0 10px currentColor; transform: scale(1.25); }
+  .garden-seed-dot .tooltip {
+    display: none; position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); color: #fff; font-size: 10px; padding: 2px 8px;
+    border-radius: 6px; white-space: nowrap; pointer-events: none;
+  }
+  .garden-seed-dot:hover .tooltip { display: block; }
 </style>
 </head>
 <body>
@@ -346,7 +351,7 @@
         <button class="garden-btn" onclick="gardenAction('plant')" style="color:var(--success);border-color:rgba(78,204,163,0.4);">🌱 种植</button>
       </div>
       <div class="garden-seed-select" id="gardenSeedSelect"></div>
-      <div class="hint-bar" style="margin-top:8px;">💡 点击花盆选中 → 浇水/施肥/种植/收获 | 每30秒=1天 | 不浇水会枯萎</div>
+      <div class="hint-bar" style="margin-top:6px;">💡 先点花盆选中，再点下方色块选花种 → 点"种植" | 每30秒=1天</div>
     </div>
   </div>
 </div>
@@ -950,43 +955,42 @@ function playPianoNote(noteName, element) {
 }
 
 // ==================== 花卉种植 ====================
+// 100种花卉：名称,花瓣色,花瓣数,花心色,花瓣形状(0圆/1尖/2层),叶形
 var FLOWERS = [
-  '🌹玫瑰|3|2|红','🌻向日葵|4|1|黄','🌷郁金香|3|2|红','🌸樱花|5|1|粉','🌺芙蓉|4|3|红',
-  '💐花束|2|1|彩','🌼雏菊|2|2|白','🌾稻花|2|1|金','💮白花|1|1|白','🏵玫瑰|3|2|橙',
-  '🌸梅花|6|1|粉','🌷水仙|3|2|黄','🌻菊花|4|1|金','🌺牡丹|5|3|红','🌹月季|3|2|红',
-  '💐百合|2|1|白','🌼蒲公英|1|1|黄','🌸桃花|5|2|粉','🌷风信子|3|2|紫','🌻金盏花|4|1|橙',
-  '🌺山茶|5|3|红','🌹蔷薇|3|2|粉','💐康乃馨|2|1|红','🌼铃兰|2|2|白','🌸杏花|5|1|粉',
-  '🌷鸢尾|3|2|蓝','🌻大丽花|4|1|红','🌺杜鹃|5|3|粉','🌹茉莉|3|2|白','💐栀子|2|1|白',
-  '🌼雏菊|1|2|白','🌸海棠|5|2|红','🌷番红花|3|2|紫','🌻万寿菊|4|1|金','🌺紫荆|5|3|紫',
-  '🌹含笑|3|2|粉','💐木槿|2|1|粉','🌼报春|2|2|黄','🌸丁香|5|1|紫','🌷美人蕉|3|2|红',
-  '🌻矢车菊|4|1|蓝','🌺罂粟|5|3|红','🌹紫藤|3|2|紫','💐玉兰|2|1|白','🌼连翘|1|2|黄',
-  '🌸石榴花|5|2|红','🌷睡莲|3|2|粉','🌻薰衣草|4|1|紫','🌺夹竹桃|5|3|粉','🌹木香|3|2|黄',
-  '💐芍药|2|1|红','🌼酢浆|2|2|粉','🌸琼花|5|1|白','🌷仙客来|3|2|红','🌻雏菊|4|1|白',
-  '🌺三角梅|5|3|红','🌹瑞香|3|2|粉','💐菖蒲|2|1|紫','🌼鸢萝|1|2|红','🌸紫薇|5|2|紫',
-  '🌷马蹄莲|3|2|白','🌻鸡冠花|4|1|红','🌺一串红|5|3|红','🌹龙船花|3|2|红','💐桔梗|2|1|蓝',
-  '🌼石竹|2|2|粉','🌸木棉|5|1|红','🌷勿忘我|3|2|蓝','🌻波斯菊|4|1|粉','🌺绣球|5|3|蓝',
-  '🌹天竺葵|3|2|红','💐鹤望兰|2|1|橙','🌼蓝雪花|1|2|蓝','🌸凤凰木|5|2|红','🌷洋桔梗|3|2|紫',
-  '🌻金光菊|4|1|黄','🌺倒挂金钟|5|3|紫','🌹晚香玉|3|2|白','💐香雪兰|2|1|白','🌼金鱼草|2|2|橙',
-  '🌸蓝花楹|5|1|紫','🌷雪花莲|3|2|白','🌻黑眼菊|4|1|金','🌺蜡梅|5|3|黄','🌹白兰|3|2|白',
-  '💐蝴蝶兰|2|1|紫','🌼孔雀草|1|2|橙','🌸无忧花|5|2|金','🌷豹皮花|3|2|斑','🌻硫华菊|4|1|橙',
-  '🌺朱顶红|5|3|红','🌹素馨|3|2|白','💐石蒜|2|1|红','🌼点地梅|2|2|白','🌸合欢|5|1|粉',
-  '🌷葡萄风信子|3|2|蓝','🌻堆心菊|4|1|黄','🌺金苞花|5|3|金','🌹络石|3|2|白','💐香豌豆|2|1|粉',
+  '玫瑰|#e74c3c|12|#f1c40f|2|椭圆','向日葵|#f39c12|16|#5d4037|0|心形','郁金香|#ff6b6b|6|#f1c40f|1|剑形','樱花|#f8bbd0|5|#e91e63|0|椭圆','芙蓉|#e91e63|6|#fff176|2|掌形',
+  '雏菊|#fff|12|#ffc107|0|匙形','水仙|#ffeb3b|6|#ff9800|1|剑形','菊花|#ffd54f|20|#8d6e63|0|羽形','牡丹|#f06292|20|#ffeb3b|2|掌形','月季|#ef5350|10|#ffee58|2|椭圆',
+  '百合|#fff|6|#ff9800|0|剑形','蒲公英|#ffeb3b|20|#795548|0|羽形','桃花|#f8bbd0|5|#e91e63|0|椭圆','风信子|#9c27b0|8|#bbdefb|1|剑形','金盏花|#ff9800|12|#5d4037|0|匙形',
+  '山茶|#f44336|8|#ffeb3b|2|椭圆','蔷薇|#f48fb1|8|#fff176|2|椭圆','康乃馨|#e57373|12|#ffcdd2|2|剑形','铃兰|#fff|8|#c8e6c9|0|心形','杏花|#f8bbd0|5|#f06292|0|椭圆',
+  '鸢尾|#5c6bc0|6|#ffeb3b|0|剑形','大丽花|#e53935|16|#ffeb3b|1|羽形','杜鹃|#ec407a|8|#fce4ec|0|椭圆','茉莉|#fff|6|#fff176|0|椭圆','栀子|#fff|6|#ffeb3b|0|椭圆',
+  '海棠|#f06292|5|#ffeb3b|0|心形','番红花|#7e57c2|6|#ff9800|1|剑形','万寿菊|#ffa726|14|#5d4037|0|羽形','紫荆|#9c27b0|5|#e1bee7|0|心形','含笑|#f8bbd0|6|#ffeb3b|0|椭圆',
+  '木槿|#f48fb1|5|#e91e63|0|掌形','报春|#ffeb3b|5|#ff9800|0|心形','丁香|#ab47bc|8|#e8eaf6|1|心形','美人蕉|#ef5350|6|#ffeb3b|1|剑形','矢车菊|#42a5f5|8|#1565c0|0|剑形',
+  '罂粟|#f44336|4|#212121|0|羽形','紫藤|#9c27b0|12|#e1bee7|1|羽形','玉兰|#fff|6|#e8eaf6|0|椭圆','连翘|#ffeb3b|4|#ff9800|0|心形','石榴花|#e53935|6|#ffeb3b|2|椭圆',
+  '睡莲|#f48fb1|8|#ffeb3b|0|心形','薰衣草|#9575cd|8|#e8eaf6|1|剑形','夹竹桃|#ec407a|5|#fce4ec|0|剑形','木香|#fff176|5|#f9a825|0|椭圆','芍药|#f06292|14|#ffeb3b|2|掌形',
+  '酢浆|#f48fb1|5|#e91e63|0|心形','琼花|#fff|6|#c8e6c9|0|椭圆','仙客来|#e57373|5|#f44336|0|心形','三角梅|#e53935|3|#fff|0|心形','瑞香|#f8bbd0|5|#f06292|0|椭圆',
+  '菖蒲|#7e57c2|6|#ffeb3b|1|剑形','紫薇|#ab47bc|6|#e1bee7|2|椭圆','马蹄莲|#fff|1|#ffeb3b|0|心形','鸡冠花|#f44336|10|#ffcdd2|2|剑形','一串红|#e53935|8|#ef5350|1|剑形',
+  '龙船花|#ef5350|5|#ffeb3b|0|椭圆','桔梗|#5c6bc0|5|#bbdefb|1|心形','石竹|#f48fb1|5|#e91e63|2|剑形','木棉|#f44336|5|#ffeb3b|0|掌形','勿忘我|#64b5f6|5|#1565c0|0|心形',
+  '波斯菊|#f8bbd0|8|#ffeb3b|0|羽形','绣球|#7e57c2|16|#e8eaf6|0|心形','天竺葵|#e53935|5|#f44336|0|心形','鹤望兰|#ff9800|3|#1b5e20|1|剑形','蓝雪花|#64b5f6|5|#1565c0|0|匙形',
+  '洋桔梗|#9575cd|6|#e8eaf6|0|剑形','金光菊|#ffa726|10|#5d4037|0|匙形','倒挂金钟|#9c27b0|4|#e1bee7|1|心形','晚香玉|#fff|6|#ffeb3b|0|剑形','香雪兰|#fff|6|#ff9800|1|剑形',
+  '金鱼草|#ff9800|8|#ffeb3b|1|剑形','蓝花楹|#7e57c2|5|#bbdefb|1|羽形','雪花莲|#fff|3|#c8e6c9|0|心形','黑眼菊|#ffeb3b|12|#5d4037|0|匙形','蜡梅|#fff176|5|#f9a825|0|椭圆',
+  '白兰|#fff|6|#fff176|0|剑形','蝴蝶兰|#ab47bc|3|#ffeb3b|0|心形','孔雀草|#ff9800|8|#5d4037|0|羽形','无忧花|#ffc107|5|#ff9800|0|掌形','硫华菊|#ff9800|8|#5d4037|0|羽形',
+  '朱顶红|#e53935|6|#ffeb3b|1|剑形','素馨|#fff|5|#ffeb3b|0|椭圆','石蒜|#f44336|6|#ffeb3b|1|剑形','点地梅|#fff|5|#ffeb3b|0|心形','合欢|#f48fb1|10|#e91e63|0|羽形',
+  '葡萄风信子|#5c6bc0|8|#bbdefb|1|剑形','堆心菊|#ffa726|12|#5d4037|0|匙形','金苞花|#ffc107|8|#fff|0|剑形','络石|#fff|5|#ffeb3b|0|椭圆','香豌豆|#f48fb1|3|#e91e63|0|心形',
 ];
 var gardenState = null;
+var POT_W = 130, POT_H = 120;
 
 function startGarden() {
   showScreen('gardenScreen');
   var s = loadStats();
   gardenState = {
     pots: new Array(6).fill(null),
-    selectedPot: -1,
-    selectedSeed: 0,
+    selectedPot: -1, selectedSeed: 0,
     collected: (s.gardenFlowers ? s.gardenFlowers.split(',') : []),
     tickTimer: null
   };
   renderGarden();
   updateGardenCollected();
-  gardenState.tickTimer = addInterval(gardenTick, 30000); // 30s = 1 game day
+  gardenState.tickTimer = addInterval(gardenTick, 30000);
 }
 
 function resetGarden() {
@@ -1001,48 +1005,207 @@ function gardenTick() {
   var gs = gardenState;
   if (!gs || currentGame !== 'garden') return;
   for (var i = 0; i < gs.pots.length; i++) {
-    var p = gs.pots[i];
-    if (!p) continue;
+    var p = gs.pots[i]; if (!p) continue;
     p.water = Math.max(0, p.water - 1);
     p.fert = Math.max(0, p.fert - 1);
-    if (p.water <= 0 && p.stage > 0 && p.stage < 5) { p.stage = 5; p.wilted = true; } // wilt
-    else if (p.water > 0 && p.stage < 4) p.stage = Math.min(4, p.stage + 1); // grow
+    if (p.water <= 0 && p.stage > 0 && p.stage < 5) { p.stage = 5; p.wilted = true; }
+    else if (p.water > 0 && p.stage < 4) p.stage = Math.min(4, p.stage + 1);
   }
   renderGarden();
+}
+
+function drawFlower(ctx, w, h, flowerIdx, stage) {
+  var f = FLOWERS[flowerIdx].split('|');
+  var petalColor = f[1], petalCount = parseInt(f[2]), centerColor = f[3];
+  var petalShape = parseInt(f[4]); // 0=round, 1=pointed, 2=layered
+  ctx.clearRect(0, 0, w, h);
+
+  // 土壤
+  ctx.fillStyle = '#3e2723'; ctx.fillRect(10, h-16, w-20, 16);
+  ctx.fillStyle = '#5d4037'; ctx.fillRect(10, h-16, w-20, 6);
+  // 花盆
+  ctx.fillStyle = '#8d6e63';
+  ctx.beginPath(); ctx.moveTo(18, h-16); ctx.lineTo(12, h-2); ctx.lineTo(w-12, h-2); ctx.lineTo(w-18, h-16); ctx.fill();
+
+  if (stage === 0) {
+    // 种子：土里一个小圆点
+    ctx.fillStyle = '#795548'; ctx.beginPath(); ctx.arc(w/2, h-24, 4, 0, Math.PI*2); ctx.fill();
+  } else if (stage >= 1) {
+    var stemH = 20 + stage * 15;
+    var stemY = h - 20 - stemH;
+    var sway = Math.sin(Date.now()/2000 + flowerIdx) * 2; // 微风吹动
+    var stemX = w/2 + sway;
+
+    // 茎
+    ctx.strokeStyle = stage >= 5 ? '#8d6e63' : '#4caf50';
+    ctx.lineWidth = stage >= 5 ? 2.5 : 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(w/2, h-18);
+    ctx.quadraticCurveTo(stemX, h-18-stemH*0.5, stemX, stemY);
+    ctx.stroke();
+
+    if (stage >= 2) {
+      // 叶子
+      var leafColor = stage >= 5 ? '#a1887f' : '#66bb6a';
+      var leafW = 14 + stage * 3;
+      for (var li = 0; li < (stage >= 3 ? 2 : 1); li++) {
+        var ly = h - 18 - stemH * (0.35 + li * 0.3);
+        var lx = li === 0 ? stemX - leafW * 0.6 : stemX + leafW * 0.5;
+        ctx.fillStyle = leafColor;
+        ctx.beginPath(); ctx.ellipse(lx, ly, leafW, leafW*0.4, li*0.5-0.2, 0, Math.PI*2); ctx.fill();
+        // 叶脉
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 0.6;
+        ctx.beginPath(); ctx.moveTo(lx-leafW*0.3, ly); ctx.lineTo(lx+leafW*0.4, ly); ctx.stroke();
+      }
+    }
+
+    if (stage >= 3) {
+      // 花朵
+      var flowerR = stage >= 4 ? 16 + petalCount * 0.3 : 7;
+      var cx = stemX, cy = stemY;
+      var alpha = stage >= 5 ? 0.35 : 1;
+
+      ctx.globalAlpha = alpha;
+
+      if (petalShape === 0) {
+        // 圆形花瓣
+        for (var pi = 0; pi < petalCount; pi++) {
+          var angle = (Math.PI * 2 / petalCount) * pi - Math.PI / 2;
+          var px = cx + Math.cos(angle) * flowerR * 0.55;
+          var py = cy + Math.sin(angle) * flowerR * 0.55;
+          ctx.fillStyle = petalColor;
+          ctx.beginPath(); ctx.arc(px, py, flowerR * 0.5, 0, Math.PI * 2); ctx.fill();
+        }
+      } else if (petalShape === 1) {
+        // 尖形花瓣 (郁金香/风信子)
+        for (var pi = 0; pi < petalCount; pi++) {
+          var angle = (Math.PI * 2 / petalCount) * pi - Math.PI / 2;
+          ctx.fillStyle = petalColor;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.quadraticCurveTo(
+            cx + Math.cos(angle - 0.4) * flowerR * 0.6, cy + Math.sin(angle - 0.4) * flowerR * 0.6,
+            cx + Math.cos(angle) * flowerR, cy + Math.sin(angle) * flowerR
+          );
+          ctx.quadraticCurveTo(
+            cx + Math.cos(angle + 0.4) * flowerR * 0.6, cy + Math.sin(angle + 0.4) * flowerR * 0.6,
+            cx, cy
+          );
+          ctx.fill();
+        }
+      } else {
+        // 层叠花瓣 (玫瑰/牡丹)
+        for (var layer = 2; layer >= 1; layer--) {
+          var r = flowerR * (0.5 + layer * 0.25);
+          var count = Math.floor(petalCount / layer);
+          for (var pi = 0; pi < count; pi++) {
+            var angle = (Math.PI * 2 / count) * pi + layer * 0.3 - Math.PI / 2;
+            var px2 = cx + Math.cos(angle) * r * 0.4;
+            var py2 = cy + Math.sin(angle) * r * 0.4;
+            ctx.fillStyle = layer === 1 ? lightenColor(petalColor, 30) : petalColor;
+            ctx.beginPath(); ctx.arc(px2, py2, r * 0.45, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+      }
+
+      // 花心
+      if (stage >= 4) {
+        ctx.fillStyle = centerColor;
+        ctx.beginPath(); ctx.arc(cx, cy, flowerR * 0.25, 0, Math.PI * 2); ctx.fill();
+        // 花粉点
+        ctx.fillStyle = 'rgba(255,255,200,0.5)';
+        for (var di = 0; di < 4; di++) {
+          var da = Math.random() * Math.PI * 2;
+          ctx.beginPath(); ctx.arc(cx + Math.cos(da) * flowerR * 0.13, cy + Math.sin(da) * flowerR * 0.13, 1.5, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      // 花萼
+      ctx.fillStyle = stage >= 5 ? '#8d6e63' : '#388e3c';
+      ctx.beginPath(); ctx.ellipse(cx, cy + flowerR * 0.15, flowerR * 0.5, 3, 0, 0, Math.PI * 2); ctx.fill();
+
+      ctx.globalAlpha = 1;
+    }
+
+    if (stage >= 5) {
+      // 枯萎特效：棕色滤镜
+      ctx.fillStyle = 'rgba(139,119,101,0.25)';
+      ctx.fillRect(0, 0, w, h);
+      // 落叶
+      ctx.fillStyle = '#a1887f';
+      ctx.beginPath(); ctx.arc(w/2 + 20, h-40, 3, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(w/2 - 15, h-30, 2.5, 0, Math.PI*2); ctx.fill();
+    }
+  }
+}
+
+function lightenColor(hex, pct) {
+  var num = parseInt(hex.slice(1), 16);
+  var r = Math.min(255, (num >> 16) + pct);
+  var g = Math.min(255, ((num >> 8) & 0xFF) + pct);
+  var b = Math.min(255, (num & 0xFF) + pct);
+  return '#' + (0x1000000 + (r<<16) + (g<<8) + b).toString(16).slice(1);
 }
 
 function renderGarden() {
   var gs = gardenState;
   var potsEl = document.getElementById('gardenPots');
-  var stages = ['🌰','🌱','🌿','🌷','🌸','🥀'];
   var stageNames = ['种子','萌芽','幼苗','含苞','盛开','枯萎'];
   potsEl.innerHTML = '';
+
   for (var i = 0; i < gs.pots.length; i++) {
     var p = gs.pots[i];
-    var sel = i === gs.selectedPot ? 'border-color:var(--success);box-shadow:0 0 12px rgba(78,204,163,0.3);' : '';
+    var potDiv = document.createElement('div');
+    potDiv.className = 'garden-pot';
+    if (i === gs.selectedPot) potDiv.classList.add('selected');
+    potDiv.onclick = (function(idx) { return function() { selectGardenPot(idx); }; })(i);
+
+    var cvs = document.createElement('canvas');
+    cvs.width = POT_W; cvs.height = POT_H;
+    potDiv.appendChild(cvs);
+
+    var ctx = cvs.getContext('2d');
     if (!p) {
-      potsEl.innerHTML += '<div class="garden-pot" style="'+sel+'" onclick="selectGardenPot('+i+')"><div class="gp-emoji">🪴</div><div class="gp-name">空地</div></div>';
+      // 空地
+      ctx.fillStyle = '#5d4037'; ctx.fillRect(10, POT_H-16, POT_W-20, 16);
+      ctx.fillStyle = '#8d6e63';
+      ctx.beginPath(); ctx.moveTo(18, POT_H-16); ctx.lineTo(12, POT_H-2); ctx.lineTo(POT_W-12, POT_H-2); ctx.lineTo(POT_W-18, POT_H-16); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('🪴', POT_W/2, POT_H-28);
     } else {
-      var fdata = FLOWERS[p.flowerIdx].split('|');
-      potsEl.innerHTML +=
-        '<div class="garden-pot" style="'+sel+'" onclick="selectGardenPot('+i+')">' +
-          '<div class="gp-emoji">' + stages[p.stage] + '</div>' +
-          '<div class="gp-name">' + fdata[0] + '</div>' +
-          '<div class="gp-stage">' + stageNames[p.stage] + '</div>' +
-          '<div class="gp-bars">' +
-            '<div class="gp-bar water" style="width:'+(p.water/10*100)+'%"></div>' +
-            '<div class="gp-bar fert" style="width:'+(p.fert/5*100)+'%"></div>' +
-          '</div>' +
-        '</div>';
+      drawFlower(ctx, POT_W, POT_H, p.flowerIdx, p.stage);
     }
+
+    if (p) {
+      var fname = FLOWERS[p.flowerIdx].split('|')[0];
+      var nameEl = document.createElement('div');
+      nameEl.className = 'gp-name';
+      nameEl.textContent = fname + ' · ' + stageNames[p.stage];
+      potDiv.appendChild(nameEl);
+
+      var bars = document.createElement('div');
+      bars.className = 'gp-bars';
+      bars.innerHTML = '<div class="gp-bar water" style="width:' + (p.water/10*100) + '%"></div>' +
+        '<div class="gp-bar fert" style="width:' + (p.fert/5*100) + '%"></div>';
+      potDiv.appendChild(bars);
+    }
+
+    potsEl.appendChild(potDiv);
   }
-  // Seed selector
+
+  // 种子色块选择器
   var seedsEl = document.getElementById('gardenSeedSelect');
   seedsEl.innerHTML = '';
   for (var j = 0; j < 12; j++) {
     var fd = FLOWERS[j].split('|');
-    seedsEl.innerHTML += '<button class="garden-seed-opt'+(j===gs.selectedSeed?' active':'')+
-      '" onclick="selectGardenSeed('+j+')">'+fd[0]+'</button>';
+    var dot = document.createElement('div');
+    dot.className = 'garden-seed-dot';
+    if (j === gs.selectedSeed) dot.classList.add('active');
+    dot.style.background = fd[1];
+    dot.style.color = fd[1];
+    dot.innerHTML = '<span class="tooltip">' + fd[0] + '</span>';
+    dot.onclick = (function(idx) { return function() { selectGardenSeed(idx); }; })(j);
+    seedsEl.appendChild(dot);
   }
 }
 
@@ -1051,12 +1214,11 @@ function selectGardenSeed(i) { gardenState.selectedSeed = i; renderGarden(); }
 
 function gardenAction(action) {
   var gs = gardenState;
-  if (gs.selectedPot < 0) { return; }
+  if (gs.selectedPot < 0) return;
   var p = gs.pots[gs.selectedPot];
 
   if (action === 'plant') {
     if (p && p.stage >= 0) return;
-    var fdata = FLOWERS[gs.selectedSeed].split('|');
     gs.pots[gs.selectedPot] = { flowerIdx: gs.selectedSeed, stage: 0, water: 10, fert: 5, wilted: false };
     sfxClick();
   } else if (!p) return;
@@ -1072,7 +1234,7 @@ function gardenAction(action) {
       }
       gs.pots[gs.selectedPot] = null;
       sfxCorrect();
-    } else { sfxWrong(); }
+    } else sfxWrong();
   }
   renderGarden();
 }
